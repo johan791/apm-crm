@@ -1,0 +1,85 @@
+CRM-systemutveckling för möbelföretag
+Summering
+Ett litet möbelföretag behöver ett enkelt, anpassat CRM-system för att hantera kunddata, projekt och leveranser. Johan Ericsson föreslår en AI-driven lösning som kombinerar moderna utvecklingsverktyg med integrationer till befintliga system, istället för dyra standardsystem. Systemet ska byggas iterativt och kostnaden beräknas till 30-40% under marknadspris.
+
+Systemkrav och funktionalitet
+
+Enkelt gränssnitt för att lagra kundinformation, kontaktuppgifter och projektdetaljer
+
+Möjlighet att ladda upp bilder, moodboards, ritningar och leverantörsfakturor per projekt
+
+Tidrapportering och möjlighet att skriva ut rapporter för kunder
+
+Leveransplanering med notifikationer via mail eller kalender
+
+Offert- och orderskapande med automatisk marginalberäkning
+
+Integration med Fortnox för leverantörskostnader och lönsamhetsanalys
+
+Teknisk arkitektur och integration
+
+Integration med befintliga verktyg: Outlook, OneDrive/SharePoint, Fortnox och möjlig möbelsökning
+
+Undvikande av dubbelregistrering genom att länka till befintliga dokument i molnet
+
+Möjlighet att integrera med samarbetspartners och underleverantörer
+
+Synkronisering av leveranskalender med personliga Outlook-kalendrar
+
+Möjlighet att lägga till nya integrationer i framtiden utan att behöva bygga om systemet
+
+Användning av Claude Code eller liknande AI-verktyg för flexibel kodning och framtida ändringar
+
+Identifierade flaskhalsar och utmaningar
+
+Återkoppling från många intressenter och underleverantörer tar mycket tid
+
+Faktureringen är komplex, särskilt för Göteborgs stad med många olika förvaltningar och enheter
+
+Offerter från flera leverantörer måste jämföras manuellt i Excel för att beräkna marginaler
+
+Svårt att hitta rätt mottagare för fakturor då inköpsorder ofta innehåller felaktig information
+
+Stora upphandlingar kräver mycket tid för att samla information från flera leverantörer
+
+Behov av historik och spårbarhet för att snabbt kunna lösa reklamationer och leveransproblem
+
+Implementeringsprocess och kostnad
+
+Initialt möte på 1,5-2 timmar för att kartlägga must-have och nice-to-have funktioner
+
+Prototyp utvecklas under några timmar, följt av iterativ utveckling
+
+Totalt cirka 20-25 timmar utveckling, men endast 5-10 timmar faktureras initialt
+
+Månadskostnad för drift och underhåll, beräknad till 30-40% under konkurrentnivå (motsvarar 2500-3000 kr/månad för standardsystem)
+
+Systemet kan användas redan under utveckling, innan det är helt färdigt
+
+Löpande anpassningar och förbättringar möjliga utan att behöva bygga om från grunden
+
+AI-möjligheter och framtida utökningar
+
+Transkribering och sammanfattning av möten och kommunikation
+
+Mönsterigenkänning för att identifiera återkommande problem med kunder eller leverantörer
+
+Automatiska mejlsvar som utkast för stora volymer av mailhantering
+
+Möbelsökning integrerad i systemet för att slippa söka på flera webbshoppar
+
+Möjlighet att bygga ut systemet med nya AI-funktioner när behoven växer
+
+Kvalitetssäkring genom att dokumentera och analysera leveransproblem och reklamationer
+
+Viktiga insikter
+
+Börja enkelt och bygga ut – ett basissystem är bättre än ett överkomplicerat system man inte använder
+
+Integration före dubbelregistrering – länka till befintliga system istället för att skapa nya datakällor
+
+Flexibilitet och ägande – använd verktyg som möjliggör framtida ändringar och inte låser in företaget hos en leverantör
+
+Iterativ utveckling – systemet kan användas och förbättras löpande istället för att vänta på en perfekt slutprodukt
+
+AI som verktyg för effektivitet – moderna AI-verktyg gör det möjligt att bygga skräddarsydda lösningar snabbare och billigare än tidigare

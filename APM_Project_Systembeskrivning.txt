@@ -1,0 +1,155 @@
+APM PROJECT – INTERNT VERKSAMHETSSYSTEM
+==========================================
+Sammanställning av produktidé, funktioner och tänk
+Datum: 2026-05-11
+
+
+1. PRODUKTIDÉ
+-------------
+APM Project är ett Göteborgsbaserat företag (tidigare "Arbetsplatsmiljö")
+som arbetar med cirkulär kontorsinredning för företag och offentliga
+aktörer. Verksamheten har två huvudben:
+
+  • Utbildning & strategi – riktlinjer, beslutstöd och strategi för
+    cirkulär inredning.
+  • Projektledning & genomförande – cirkulära inredningsprojekt från
+    inventering till installation.
+
+Detta system är APM Projects interna CRM/ERP – en sammanhållen plattform
+som ersätter spridda Excel-ark, mejltrådar och separata fakturasystem.
+Målet är att kunna styra hela kedjan från första kundkontakt → offert →
+projekt → tidrapportering → leverantörsfakturor → faktureringsunderlag,
+med full spårbarhet och korrekt branding på alla externa dokument.
+
+Tänket bakom systemet:
+  • EN sanning per kund och projekt – allt hänger ihop via projektet
+    som central nav.
+  • Minimera dubbelarbete – data som skapas en gång (kund, projekt,
+    timpris) återanvänds i offerter, tidrapporter och fakturaunderlag.
+  • Stöd för offentlig sektor – upphandlingsdokument, tydlig prissättning,
+    A4-utskrifter med APM-branding.
+  • Cloud-first, multianvändare – inloggning via e-post, Google eller
+    Apple. Säker datalagring i EU (EMEA-region).
+
+
+2. TEKNISK GRUND
+----------------
+  • Frontend: React + Vite + TypeScript + Tailwind (shadcn-komponenter)
+  • Backend: Lovable Cloud (databas, autentisering, edge functions)
+  • Region: EU/EMEA – följer dataskyddskrav för offentliga kunder
+  • Integrationer:
+      - Fortnox (bokföring, leverantörsfakturor – OAuth2)
+      - E-postutskick (transaktionella mail, leveranspåminnelser)
+
+
+3. NAVIGATION & MENYER
+----------------------
+Sidomenyn (vänster) innehåller följande huvudmoduler:
+
+  ┌──────────────────────────────────────────────────────────────┐
+  │  APM Project                                                 │
+  ├──────────────────────────────────────────────────────────────┤
+  │  • Dashboard          – översikt och nyckeltal               │
+  │  • Kunder             – kundregister                         │
+  │  • Projekt            – central projektvy                    │
+  │  • Offerter & Order   – skapa, marginalberäkna, konvertera   │
+  │  • Tidrapportering    – tidloggning per projekt              │
+  │  • Resursplanering    – kalender för leveranser/installation │
+  │  • Leverantörsfakturor – inkommande fakturor (Fortnox-import)│
+  │  • Fakturasammanställning – månatligt underlag för fakturering│
+  └──────────────────────────────────────────────────────────────┘
+
+  Längst ned: inloggad användare + utloggning.
+
+
+4. MODULER I DETALJ
+-------------------
+
+4.1 DASHBOARD
+   Snabb översikt: antal kunder, tidrapporter, offerter och fakturor.
+   Tänkt som första anhalt vid inloggning.
+
+4.2 KUNDER
+   Register över alla kunder (företag, kommuner, offentliga aktörer).
+   Fält: företagsnamn, organisationsnummer, kontaktperson, adress,
+   e-post, telefon. Kopplas till projekt, offerter och fakturor.
+
+4.3 PROJEKT (navet i systemet)
+   Varje uppdrag läggs upp som ett projekt med:
+     - Projektnamn, kund, status, timpris
+     - Ekonomisk översikt (intäkter vs. kostnader)
+     - Kopplade offerter, tidrapporter, leverantörsfakturor
+     - Filhantering med kategoriserade mappar (auto-sortering,
+       HEIC→JPG-konvertering för bilder från iPhone)
+
+4.4 OFFERTER & ORDER
+   • Skapa offert med radbaserad prissättning, rabatter och moms.
+   • Intern marginalberäkning (självkostnad vs. utpris) – syns ej
+     för kund.
+   • A4-utskrift / PDF med APM Project-branding och logotyp.
+   • 1-klicks konvertering offert → orderbekräftelse.
+   • Innehåller villkor: betalning, leveranstid, giltighetstid.
+
+4.5 TIDRAPPORTERING
+   • Loggning av timmar per projekt, kund och datum.
+   • Beskrivning per post.
+   • Sammanställning per projekt med utskriftsvy (samlat A4-dokument
+     per projekt – för bilaga till faktura eller internt arkiv).
+
+4.6 RESURSPLANERING
+   • Kalendervy med veckonummer.
+   • Tre händelsetyper: leverans, installation, upphämtning.
+   • Kopplas till kund och projekt.
+   • Automatisk e-postpåminnelse dagen före händelser
+     (edge function "send-delivery-reminders").
+
+4.7 LEVERANTÖRSFAKTUROR
+   • Manuell registrering eller import från Fortnox.
+   • Status: obetald / betald / förfallen.
+   • Kopplas till projekt – ger korrekt kostnadsbild i projektets
+     ekonomi.
+
+4.8 FAKTURASAMMANSTÄLLNING
+   • Månatlig aggregering per kund/projekt.
+   • Summerar tidrapporter (timmar × timpris) och vidarefakturerade
+     leverantörskostnader.
+   • Underlag för utgående faktura – skrivs ut som A4 med
+     APM-branding.
+
+
+5. AUTENTISERING & SÄKERHET
+---------------------------
+  • Inloggning: e-post + lösenord, Google, Apple
+  • Glömt lösenord: e-postlänk → reset-sida
+  • Row Level Security (RLS) på databasnivå – varje användare
+    ser endast sin egen organisations data
+  • Roller hanteras i separat tabell (förhindrar
+    privilegieeskalering)
+
+
+6. DESIGNPRINCIPER
+------------------
+  • Professionell, ren visuell identitet
+  • Dashboard-layout med fast sidomeny
+  • Semantiska designtokens (HSL-färger) – konsekvent tema
+  • Alla externa dokument (offerter, ordrar, tidrapporter, fakturor)
+    bär APM Project-logotyp och varumärke
+  • Svenska som språk genomgående
+  • Responsiv – fungerar på desktop och mobil
+
+
+7. AFFÄRSNYTTA
+--------------
+  • Spara tid: inga dubbelregistreringar mellan offert, tid och
+    faktura.
+  • Bättre marginalkoll: realtidsöversikt över projektets ekonomi.
+  • Professionellt yttre: konsekvent branding mot offentliga kunder
+    där upphandling kräver tydlighet.
+  • Skalbart: nya användare kan läggas till utan extra licenskostnad
+    per modul.
+  • Hållbarhetsspårning (framtid): underlag för CSRD-rapportering
+    och Scope 3-utsläpp kopplat till möbelflöden.
+
+
+==========================================
+Slut på sammanställning.

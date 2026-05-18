@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uppdragsbekräftelse – APM Project CRM</title>
+    <style>
+        @page {
+            margin: 25mm 20mm;
+            size: A4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #1a1a1a;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 25mm 20mm;
+            background: #fff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #1a1a1a;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .header-left h1 {
+            font-size: 22pt;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .header-left .subtitle {
+            font-size: 11pt;
+            color: #555;
+        }
+
+        .header-right {
+            text-align: right;
+            font-size: 9pt;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .meta-box {
+            background: #f7f7f7;
+            border-left: 4px solid #1a1a1a;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .meta-box .label {
+            font-weight: 600;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #666;
+        }
+
+        .meta-box .value {
+            font-size: 10pt;
+        }
+
+        h2 {
+            font-size: 14pt;
+            font-weight: 700;
+            margin-top: 28px;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid #e0e0e0;
+        }
+
+        h3 {
+            font-size: 11pt;
+            font-weight: 700;
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        ul {
+            margin-bottom: 12px;
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 5px;
+        }
+
+        ul li strong {
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 20px;
+            font-size: 10pt;
+        }
+
+        table th {
+            background: #1a1a1a;
+            color: #fff;
+            text-align: left;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table tr:last-child td {
+            border-bottom: 2px solid #1a1a1a;
+            font-weight: 700;
+        }
+
+        .price-box {
+            background: #f7f7f7;
+            border: 2px solid #1a1a1a;
+            padding: 20px;
+            margin: 16px 0 24px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+
+        .price-row.total {
+            border-top: 2px solid #1a1a1a;
+            margin-top: 10px;
+            padding-top: 12px;
+            font-weight: 700;
+            font-size: 13pt;
+        }
+
+        .price-label {
+            color: #333;
+        }
+
+        .price-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .future-list {
+            color: #666;
+            font-style: italic;
+        }
+
+        .future-list li {
+            margin-bottom: 3px;
+        }
+
+        .next-steps {
+            background: #f7f7f7;
+            border-left: 4px solid #1a1a1a;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+
+        .next-steps ol {
+            padding-left: 20px;
+        }
+
+        .next-steps li {
+            margin-bottom: 6px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1.5px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9pt;
+            color: #888;
+        }
+
+        .signature {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .signature-block {
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+        }
+
+        .signature-block .name {
+            font-weight: 600;
+            font-size: 10pt;
+        }
+
+        .signature-block .role {
+            font-size: 9pt;
+            color: #666;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .no-print {
+                display: none;
+            }
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 11pt;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .print-btn:hover {
+            background: #333;
+        }
+
+        @media print {
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">Skriv ut / Spara som PDF</button>
+
+<div class="header">
+    <div class="header-left">
+        <h1>Uppdragsbekräftelse</h1>
+        <div class="subtitle">CRM-system för APM Project</div>
+    </div>
+    <div class="header-right">
+        <strong>V4i</strong><br>
+        Johan Ericsson<br>
+        johan@v4i.se
+    </div>
+</div>
+
+<div class="meta-box">
+    <div><span class="label">Datum</span><br><span class="value">2026-05-12</span></div>
+    <div><span class="label">Mottagare</span><br><span class="value">Linda Sandqvist, APM Project</span></div>
+    <div><span class="label">Projekt</span><br><span class="value">Internt CRM-system</span></div>
+    <div><span class="label">Status</span><br><span class="value">Inväntar bekräftelse</span></div>
+</div>
+
+<p>Hej Linda,</p>
+<p>Tack för ett bra möte! Här kommer en sammanfattning av vad vi kom överens om gällande scope, tidsplan och kostnad.</p>
+
+<h2>Vad vi bygger</h2>
+
+<p>Ett skräddarsytt, webbaserat CRM-system som samlar APM Projects kunddata, projekt och leveranser på ett ställe – anpassat för er verksamhet och byggt för att växa med era behov.</p>
+
+<h3>Funktioner i första leveransen</h3>
+<ul>
+    <li><strong>Kundregister</strong> – kontaktuppgifter, organisationsnummer, historik</li>
+    <li><strong>Projekthantering</strong> – central projektvy med status, ekonomi och koppling till kund</li>
+    <li><strong>Filhantering</strong> – uppladdning av bilder, moodboards, ritningar och leverantörsfakturor per projekt</li>
+    <li><strong>Tidrapportering</strong> – loggning per projekt med utskriftsbara rapporter</li>
+    <li><strong>Offerter &amp; order</strong> – radbaserad prissättning med automatisk marginalberäkning och PDF-utskrift med APM-branding</li>
+    <li><strong>Leveransplanering</strong> – kalendervy med påminnelser via e-post</li>
+</ul>
+
+<h3>Integrationer</h3>
+<ul>
+    <li><strong>Fortnox</strong> – import av leverantörsfakturor för lönsamhetsanalys per projekt</li>
+    <li><strong>Outlook / Office 365</strong> – synkronisering av leveranskalender med era Outlook-kalendrar</li>
+    <li><strong>OneDrive</strong> – länkning till befintliga dokument istället för dubbelregistrering</li>
+</ul>
+
+<h3>Framtida möjligheter (ingår ej i första leveransen)</h3>
+<ul class="future-list">
+    <li>AI-driven möbelsökning och katalogisering</li>
+    <li>Transkribering och sammanfattning av möten</li>
+    <li>Automatiska mejlutkast</li>
+    <li>Mönsterigenkänning för leveransproblem och reklamationer</li>
+    <li>Underleverantörsportal</li>
+    <li>Hållbarhetsrapportering (CO2-besparing per projekt)</li>
+</ul>
+
+<h2>Hur vi bygger</h2>
+
+<p>Systemet byggs iterativt – ni får en första körbar version tidigt och kan börja använda den medan vi bygger vidare. Ingen behöver vänta på att allt är klart.</p>
+<p>Tekniken är modern och flexibel, vilket gör det enkelt att anpassa och bygga ut i framtiden utan att behöva börja om. Systemet fungerar på både dator och mobil/surfplatta.</p>
+
+<h2>Tidsplan</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fas</th>
+            <th>Innehåll</th>
+            <th>Uppskattad tid</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1. Kartläggning</td>
+            <td>Must-have vs. nice-to-have (genomfört)</td>
+            <td>1,5–2 timmar</td>
+        </tr>
+        <tr>
+            <td>2. Prototyp</td>
+            <td>Grundstruktur, kunder, projekt</td>
+            <td>4–5 timmar</td>
+        </tr>
+        <tr>
+            <td>3. Iterativ utveckling</td>
+            <td>Offerter, tidrapportering, leveransplanering, integrationer</td>
+            <td>10–13 timmar</td>
+        </tr>
+        <tr>
+            <td><strong>Totalt</strong></td>
+            <td></td>
+            <td><strong>15–20 timmar</strong></td>
+        </tr>
+    </tbody>
+</table>
+
+<p>En första användbar version beräknas vara klar inom <strong>1–2 veckor</strong>. Komplett system med integrationer inom <strong>3–4 veckor</strong>.</p>
+
+<h2>Kostnad</h2>
+
+<div class="price-box">
+    <h3>Utveckling</h3>
+    <div class="price-row">
+        <span class="price-label">Uppskattad arbetsinsats</span>
+        <span class="price-value">15–20 timmar</span>
+    </div>
+    <div class="price-row">
+        <span class="price-label">Timpris</span>
+        <span class="price-value">1 095 kr</span>
+    </div>
+    <div class="price-row total">
+        <span class="price-label">Faktureras (10 timmar)</span>
+        <span class="price-value">10 950 kr exkl. moms</span>
+    </div>
+
+    <br>
+
+    <h3>Drift och underhåll</h3>
+    <div class="price-row">
+        <span class="price-label">Månadskostnad (år 1)</span>
+        <span class="price-value">1 350 kr/mån exkl. moms</span>
+    </div>
+    <div class="price-row" style="font-size: 9pt; color: #666;">
+        <span class="price-label">Jämförelse: standardsystem med motsvarande funktionalitet</span>
+        <span class="price-value">2 500–3 000 kr/mån</span>
+    </div>
+</div>
+
+<h3>Vad ingår i månadskostnaden</h3>
+<ul>
+    <li>Hosting och drift av systemet</li>
+    <li>Säkerhetsuppdateringar</li>
+    <li>Mindre anpassningar och justeringar löpande</li>
+    <li>Support via mejl</li>
+</ul>
+
+<h3>Tillkommande kostnader</h3>
+<p>Större vidareutveckling och nya funktioner faktureras löpande till 1 095 kr/timme. Ni meddelas alltid i förväg innan extra arbete påbörjas.</p>
+
+<h2>Ägandeskap och flexibilitet</h2>
+<ul>
+    <li>Systemet byggs med öppen teknik – ni är inte inlåsta hos en leverantör</li>
+    <li>All data tillhör APM Project</li>
+    <li>Systemet kan vid behov tas över av annan utvecklare i framtiden</li>
+</ul>
+
+<h2>Nästa steg</h2>
+
+<div class="next-steps">
+    <ol>
+        <li>Linda bekräftar denna sammanfattning</li>
+        <li>Johan påbörjar prototyp (fas 2)</li>
+        <li>Första demo och genomgång inom ca 1 vecka</li>
+    </ol>
+</div>
+
+<p>Har du frågor eller vill justera något så hör av dig!</p>
+
+<div class="signature">
+    <div class="signature-block">
+        <div class="name">Johan Ericsson</div>
+        <div class="role">V4i – johan@v4i.se</div>
+    </div>
+    <div class="signature-block">
+        <div class="name">Linda Sandqvist</div>
+        <div class="role">APM Project</div>
+    </div>
+</div>
+
+<div class="footer">
+    <span>Uppdragsbekräftelse – CRM-system för APM Project</span>
+    <span>2026-05-12</span>
+</div>
+
+</body>
+</html>
