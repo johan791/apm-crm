@@ -1,0 +1,31 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ProjectForm } from "@/components/projects/project-form";
+import { createProject } from "@/lib/actions/projects";
+import { prisma } from "@/lib/prisma";
+
+export default async function NyttProjektPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ kund?: string }>;
+}) {
+  const { kund } = await searchParams;
+  const customers = await prisma.customer.findMany({
+    orderBy: { companyName: "asc" },
+  });
+
+  return (
+    <div className="space-y-6">
+      <Button variant="ghost" size="sm" render={<Link href="/projekt" />}>
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Tillbaka till projekt
+      </Button>
+      <ProjectForm
+        action={createProject}
+        customers={customers}
+        defaultCustomerId={kund}
+      />
+    </div>
+  );
+}

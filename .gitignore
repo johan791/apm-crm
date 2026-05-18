@@ -40,6 +40,11 @@ yarn-error.log*
 CLAUDE.md
 Claude_Chat.txt
 
+# prisma generated
+src/generated
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel

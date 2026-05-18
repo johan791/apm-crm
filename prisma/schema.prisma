@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String   @map("password_hash")
+  role         String   @default("user")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Customer {
+  id            String    @id @default(cuid())
+  companyName   String    @map("company_name")
+  orgNumber     String?   @map("org_number")
+  contactPerson String?   @map("contact_person")
+  email         String?
+  phone         String?
+  address       String?
+  city          String?
+  zipCode       String?   @map("zip_code")
+  notes         String?
+  projects      Project[]
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("customers")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  status      String    @default("active")
+  hourlyRate  Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  customerId  String    @map("customer_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("projects")
+}
