@@ -2,16 +2,60 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, FolderKanban, Menu } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FolderKanban,
+  Menu,
+  Clock,
+  FileText,
+  CalendarDays,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/kunder", label: "Kunder", icon: Users },
-  { href: "/projekt", label: "Projekt", icon: FolderKanban },
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+type NavSection = {
+  label?: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
+  {
+    items: [{ href: "/", label: "Dashboard", icon: LayoutDashboard }],
+  },
+  {
+    label: "Hantera",
+    items: [
+      { href: "/kunder", label: "Kunder", icon: Users },
+      { href: "/projekt", label: "Projekt", icon: FolderKanban },
+    ],
+  },
+  {
+    label: "Ekonomi",
+    items: [
+      { href: "/offerter", label: "Offerter", icon: FileText },
+      { href: "/tidrapportering", label: "Tidrapportering", icon: Clock },
+    ],
+  },
+  {
+    label: "Planera",
+    items: [
+      {
+        href: "/leveransplanering",
+        label: "Leveransplanering",
+        icon: CalendarDays,
+      },
+    ],
+  },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -19,28 +63,37 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <nav className="flex flex-col gap-1 px-3">
-      {navItems.map((item) => {
-        const isActive =
-          item.href === "/"
-            ? pathname === "/"
-            : pathname.startsWith(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              isActive
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-            )}
-          >
-            <item.icon className="h-4 w-4" />
-            {item.label}
-          </Link>
-        );
-      })}
+      {navSections.map((section, sIdx) => (
+        <div key={sIdx}>
+          {section.label && (
+            <p className="px-3 mb-1 mt-5 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">
+              {section.label}
+            </p>
+          )}
+          {section.items.map((item) => {
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary border-l-2 border-primary font-semibold"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }
@@ -61,13 +114,34 @@ function SidebarHeader() {
   );
 }
 
+function SidebarFooter() {
+  return (
+    <div className="border-t p-3">
+      <div className="flex items-center gap-3">
+        <Avatar size="sm">
+          <AvatarFallback>AP</AvatarFallback>
+        </Avatar>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium leading-none">
+            APM Project
+          </p>
+          <p className="truncate text-xs text-muted-foreground mt-0.5">
+            admin@apmproject.se
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DesktopSidebar() {
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:bg-card h-screen sticky top-0">
       <SidebarHeader />
-      <div className="flex-1 py-4">
+      <div className="flex-1 py-4 overflow-y-auto">
         <NavLinks />
       </div>
+      <SidebarFooter />
     </aside>
   );
 }
@@ -88,9 +162,10 @@ export function MobileNav() {
         </SheetTrigger>
         <SheetContent side="left" className="w-60 p-0">
           <SidebarHeader />
-          <div className="py-4">
+          <div className="flex-1 py-4 overflow-y-auto">
             <NavLinks onNavigate={() => setOpen(false)} />
           </div>
+          <SidebarFooter />
         </SheetContent>
       </Sheet>
       <p className="text-sm font-semibold">APM Project</p>

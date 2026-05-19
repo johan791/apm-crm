@@ -22,35 +22,105 @@ model User {
 }
 
 model Customer {
-  id            String    @id @default(cuid())
-  companyName   String    @map("company_name")
-  orgNumber     String?   @map("org_number")
-  contactPerson String?   @map("contact_person")
-  email         String?
-  phone         String?
-  address       String?
-  city          String?
-  zipCode       String?   @map("zip_code")
-  notes         String?
-  projects      Project[]
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id             String          @id @default(cuid())
+  companyName    String          @map("company_name")
+  orgNumber      String?         @map("org_number")
+  contactPerson  String?         @map("contact_person")
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  zipCode        String?         @map("zip_code")
+  notes          String?
+  projects       Project[]
+  quotes         Quote[]
+  deliveryEvents DeliveryEvent[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
   @@map("customers")
 }
 
 model Project {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  status      String    @default("active")
-  hourlyRate  Decimal?  @map("hourly_rate") @db.Decimal(10, 2)
-  startDate   DateTime? @map("start_date")
-  endDate     DateTime? @map("end_date")
-  customer    Customer  @relation(fields: [customerId], references: [id])
-  customerId  String    @map("customer_id")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  status         String          @default("active")
+  hourlyRate     Decimal?        @map("hourly_rate") @db.Decimal(10, 2)
+  startDate      DateTime?       @map("start_date")
+  endDate        DateTime?       @map("end_date")
+  customer       Customer        @relation(fields: [customerId], references: [id])
+  customerId     String          @map("customer_id")
+  timeEntries    TimeEntry[]
+  quotes         Quote[]
+  deliveryEvents DeliveryEvent[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
 
   @@map("projects")
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  date        DateTime
+  hours       Decimal  @db.Decimal(5, 2)
+  description String?
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String   @map("project_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("time_entries")
+}
+
+model Quote {
+  id            String      @id @default(cuid())
+  quoteNumber   Int         @unique @map("quote_number")
+  status        String      @default("draft")
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  customerId    String      @map("customer_id")
+  project       Project?    @relation(fields: [projectId], references: [id])
+  projectId     String?     @map("project_id")
+  validUntil    DateTime?   @map("valid_until")
+  deliveryTerms String?     @map("delivery_terms")
+  paymentTerms  String?     @map("payment_terms")
+  notes         String?
+  items         QuoteItem[]
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          String  @id @default(cuid())
+  quote       Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteId     String  @map("quote_id")
+  description String
+  unit        String  @default("st")
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+  costPrice   Decimal @default(0) @map("cost_price") @db.Decimal(10, 2)
+  discount    Decimal @default(0) @db.Decimal(5, 2)
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  @@map("quote_items")
+}
+
+model DeliveryEvent {
+  id           String   @id @default(cuid())
+  type         String
+  date         DateTime
+  time         String?
+  project      Project  @relation(fields: [projectId], references: [id])
+  projectId    String   @map("project_id")
+  customer     Customer @relation(fields: [customerId], references: [id])
+  customerId   String   @map("customer_id")
+  address      String?
+  notes        String?
+  reminderSent Boolean  @default(false) @map("reminder_sent")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("delivery_events")
 }

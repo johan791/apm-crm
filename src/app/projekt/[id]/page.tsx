@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Calendar, Clock, Building } from "lucide-react";
+import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
 import { StatusSelect } from "@/components/projects/status-select";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
+import { formatDate as fmtDate, formatHours, formatCurrency } from "@/lib/format";
 
 function formatDate(date: Date | null) {
   if (!date) return "–";
@@ -21,10 +22,25 @@ export default async function ProjektDetaljPage({
   const { id } = await params;
   const project = await prisma.project.findUnique({
     where: { id },
-    include: { customer: true },
+    include: {
+      customer: true,
+      timeEntries: { orderBy: { date: "desc" }, take: 5 },
+    },
   });
 
   if (!project) notFound();
+
+  const timeAgg = await prisma.timeEntry.aggregate({
+    where: { projectId: id },
+    _sum: { hours: true },
+    _count: true,
+  });
+
+  const totalHours = Number(timeAgg._sum.hours ?? 0);
+  const totalEntries = timeAgg._count;
+  const totalAmount = project.hourlyRate
+    ? totalHours * Number(project.hourlyRate)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -102,17 +118,69 @@ export default async function ProjektDetaljPage({
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Kommande moduler</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base">Tidrapportering</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={`/projekt/${project.id}/tid`} />}
+            >
+              Visa alla
+            </Button>
           </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Tidrapportering</li>
-              <li>Offerter & order</li>
-              <li>Leverantörsfakturor</li>
-              <li>Filhantering</li>
-              <li>Leveransplanering</li>
-            </ul>
+          <CardContent className="space-y-4">
+            <div className="flex gap-6 text-sm">
+              <div>
+                <p className="text-muted-foreground">Timmar</p>
+                <p className="font-semibold">{formatHours(totalHours)}</p>
+              </div>
+              {totalAmount !== null && (
+                <div>
+                  <p className="text-muted-foreground">Belopp</p>
+                  <p className="font-semibold">{formatCurrency(totalAmount)}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-muted-foreground">Poster</p>
+                <p className="font-semibold">{totalEntries}</p>
+              </div>
+            </div>
+
+            {project.timeEntries.length > 0 ? (
+              <div className="space-y-2">
+                {project.timeEntries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <div className="flex gap-3">
+                      <span className="text-muted-foreground whitespace-nowrap">
+                        {fmtDate(entry.date)}
+                      </span>
+                      <span className="truncate max-w-[200px]">
+                        {entry.description ?? "–"}
+                      </span>
+                    </div>
+                    <span className="font-medium whitespace-nowrap">
+                      {formatHours(entry.hours)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Inga tidsposter ännu.
+              </p>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              render={<Link href={`/projekt/${project.id}/tid/ny`} />}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ny tidspost
+            </Button>
           </CardContent>
         </Card>
       </div>

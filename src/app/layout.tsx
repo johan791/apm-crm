@@ -31,10 +31,14 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <div className="flex min-h-screen">
-          <DesktopSidebar />
+          <div className="print:hidden">
+            <DesktopSidebar />
+          </div>
           <div className="flex-1 flex flex-col">
-            <MobileNav />
-            <main className="flex-1 p-4 md:p-8">{children}</main>
+            <div className="print:hidden">
+              <MobileNav />
+            </div>
+            <main className="flex-1 p-4 md:p-8 print:p-0">{children}</main>
           </div>
         </div>
       </body>
