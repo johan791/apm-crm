@@ -10,52 +10,60 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String   @map("password_hash")
-  role         String   @default("user")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                   String     @id @default(cuid())
+  email                String     @unique
+  name                 String
+  passwordHash         String     @map("password_hash")
+  role                 String     @default("user")
+  responsibleCustomers Customer[]
+  responsibleProjects  Project[]
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
 
   @@map("users")
 }
 
 model Customer {
-  id             String          @id @default(cuid())
-  companyName    String          @map("company_name")
-  orgNumber      String?         @map("org_number")
-  contactPerson  String?         @map("contact_person")
-  email          String?
-  phone          String?
-  address        String?
-  city           String?
-  zipCode        String?         @map("zip_code")
-  notes          String?
-  projects       Project[]
-  quotes         Quote[]
-  deliveryEvents DeliveryEvent[]
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  id                String          @id @default(cuid())
+  companyName       String          @map("company_name")
+  orgNumber         String?         @map("org_number")
+  contactPerson     String?         @map("contact_person")
+  email             String?
+  phone             String?
+  address           String?
+  city              String?
+  zipCode           String?         @map("zip_code")
+  notes             String?
+  onedriveFolderUrl String?         @map("onedrive_folder_url")
+  responsibleUser   User?           @relation(fields: [responsibleUserId], references: [id])
+  responsibleUserId String?         @map("responsible_user_id")
+  projects          Project[]
+  quotes            Quote[]
+  deliveryEvents    DeliveryEvent[]
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
 
   @@map("customers")
 }
 
 model Project {
-  id             String          @id @default(cuid())
-  name           String
-  description    String?
-  status         String          @default("active")
-  hourlyRate     Decimal?        @map("hourly_rate") @db.Decimal(10, 2)
-  startDate      DateTime?       @map("start_date")
-  endDate        DateTime?       @map("end_date")
-  customer       Customer        @relation(fields: [customerId], references: [id])
-  customerId     String          @map("customer_id")
-  timeEntries    TimeEntry[]
-  quotes         Quote[]
-  deliveryEvents DeliveryEvent[]
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  id                String           @id @default(cuid())
+  name              String
+  description       String?
+  status            String           @default("active")
+  hourlyRate        Decimal?         @map("hourly_rate") @db.Decimal(10, 2)
+  startDate         DateTime?        @map("start_date")
+  endDate           DateTime?        @map("end_date")
+  customer          Customer         @relation(fields: [customerId], references: [id])
+  customerId        String           @map("customer_id")
+  responsibleUser   User?            @relation(fields: [responsibleUserId], references: [id])
+  responsibleUserId String?          @map("responsible_user_id")
+  partners          ProjectPartner[]
+  timeEntries       TimeEntry[]
+  quotes            Quote[]
+  deliveryEvents    DeliveryEvent[]
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
 
   @@map("projects")
 }
@@ -123,4 +131,32 @@ model DeliveryEvent {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("delivery_events")
+}
+
+model Partner {
+  id            String           @id @default(cuid())
+  companyName   String           @map("company_name")
+  contactPerson String?          @map("contact_person")
+  email         String?
+  phone         String?
+  category      String
+  notes         String?
+  projects      ProjectPartner[]
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@map("partners")
+}
+
+model ProjectPartner {
+  id        String  @id @default(cuid())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String  @map("project_id")
+  partner   Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  partnerId String  @map("partner_id")
+  role      String?
+  notes     String?
+
+  @@unique([projectId, partnerId])
+  @@map("project_partners")
 }

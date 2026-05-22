@@ -102,6 +102,34 @@ export async function convertToOrder(id: string) {
   revalidatePath("/");
 }
 
+export async function createProjectFromQuote(id: string) {
+  const quote = await prisma.quote.findUnique({
+    where: { id },
+    include: { customer: true },
+  });
+  if (!quote) throw new Error("Offert hittades inte");
+
+  const project = await prisma.project.create({
+    data: {
+      name: `${quote.customer.companyName} – Offert #${quote.quoteNumber}`,
+      description: `Projekt skapat från offert #${quote.quoteNumber}.${quote.notes ? `\n${quote.notes}` : ""}`,
+      status: "active",
+      customerId: quote.customerId,
+    },
+  });
+
+  await prisma.quote.update({
+    where: { id },
+    data: { projectId: project.id, status: "order" },
+  });
+
+  revalidatePath(`/offerter/${id}`);
+  revalidatePath("/offerter");
+  revalidatePath("/projekt");
+  revalidatePath("/");
+  redirect(`/projekt/${project.id}`);
+}
+
 export async function deleteQuote(id: string) {
   await prisma.quote.delete({ where: { id } });
   revalidatePath("/offerter");

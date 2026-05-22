@@ -10,6 +10,7 @@ import {
   Clock,
   FileText,
   CalendarDays,
+  Handshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -37,6 +38,7 @@ const navSections: NavSection[] = [
     items: [
       { href: "/kunder", label: "Kunder", icon: Users },
       { href: "/projekt", label: "Projekt", icon: FolderKanban },
+      { href: "/partners", label: "Partners", icon: Handshake },
     ],
   },
   {

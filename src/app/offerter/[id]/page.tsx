@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Printer, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Pencil, Printer, ShoppingCart, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { QuoteStatusSelect } from "@/components/quotes/quote-status-select";
 import { DeleteQuoteButton } from "@/components/quotes/delete-quote-button";
-import { convertToOrder } from "@/lib/actions/quotes";
+import { convertToOrder, createProjectFromQuote } from "@/lib/actions/quotes";
 
 export default async function OffertDetaljPage({
   params,
@@ -54,6 +54,7 @@ export default async function OffertDetaljPage({
   const marginPercent = sumExMoms > 0 ? (marginKr / sumExMoms) * 100 : 0;
 
   const convertWithId = convertToOrder.bind(null, quote.id);
+  const createProjectWithId = createProjectFromQuote.bind(null, quote.id);
 
   return (
     <div className="space-y-6">
@@ -111,7 +112,15 @@ export default async function OffertDetaljPage({
             <Printer className="mr-2 h-4 w-4" />
             Skriv ut
           </Button>
-          {quote.status === "accepted" && (
+          {quote.status === "accepted" && !quote.projectId && (
+            <form action={createProjectWithId}>
+              <Button type="submit" size="sm">
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Skapa projekt
+              </Button>
+            </form>
+          )}
+          {quote.status === "accepted" && quote.projectId && (
             <form action={convertWithId}>
               <Button type="submit" size="sm">
                 <ShoppingCart className="mr-2 h-4 w-4" />

@@ -5,6 +5,67 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("Seeding database...");
 
+  // --- Users ---
+  const linda = await prisma.user.create({
+    data: {
+      email: "linda@apmproject.se",
+      name: "Linda",
+      passwordHash: "placeholder",
+      role: "admin",
+    },
+  });
+
+  const caroline = await prisma.user.create({
+    data: {
+      email: "caroline@apmproject.se",
+      name: "Caroline",
+      passwordHash: "placeholder",
+      role: "user",
+    },
+  });
+
+  const robert = await prisma.user.create({
+    data: {
+      email: "robert@apmproject.se",
+      name: "Robert",
+      passwordHash: "placeholder",
+      role: "user",
+    },
+  });
+
+  // --- Partners ---
+  const adayservice = await prisma.partner.create({
+    data: {
+      companyName: "A Day Service",
+      contactPerson: "Anders Karlsson",
+      email: "info@adayservice.se",
+      phone: "031-123 45 67",
+      category: "logistics",
+      notes: "Primär logistikpartner – flytt, leverans och hämtning.",
+    },
+  });
+
+  const snickarna = await prisma.partner.create({
+    data: {
+      companyName: "Snickarna i Gbg AB",
+      contactPerson: "Johan Nilsson",
+      email: "johan@snickarna.se",
+      phone: "031-234 56 78",
+      category: "carpentry",
+    },
+  });
+
+  const kladselmakaren = await prisma.partner.create({
+    data: {
+      companyName: "Klädselmakaren",
+      contactPerson: "Eva Bergström",
+      email: "eva@kladselmakaren.se",
+      phone: "031-345 67 89",
+      category: "upholstery",
+      notes: "Omklädsel av stolar och soffor.",
+    },
+  });
+
   // --- Customers ---
   const gbg = await prisma.customer.create({
     data: {
@@ -18,6 +79,7 @@ async function main() {
       zipCode: "411 14",
       notes:
         "Ramavtal cirkulär inredning. Kontakta via upphandling@goteborg.se för nya beställningar.",
+      responsibleUserId: linda.id,
     },
   });
 
@@ -31,6 +93,7 @@ async function main() {
       address: "Gropegårdsgatan 2",
       city: "Göteborg",
       zipCode: "405 08",
+      responsibleUserId: caroline.id,
     },
   });
 
@@ -44,6 +107,7 @@ async function main() {
       address: "Chalmersplatsen 4",
       city: "Göteborg",
       zipCode: "412 96",
+      responsibleUserId: robert.id,
     },
   });
 
@@ -58,6 +122,8 @@ async function main() {
       city: "Solna",
       zipCode: "171 93",
       notes: "Nytt kontor planeras Q3 2026. Intresserad av cirkulär möblering.",
+      responsibleUserId: linda.id,
+      onedriveFolderUrl: "https://onedrive.example.com/ica-fastigheter",
     },
   });
 
@@ -69,6 +135,7 @@ async function main() {
         "Byta ut slitna kontorsmöbler mot renoverade alternativ. Inventering + inköp + installation.",
       status: "active",
       customerId: gbg.id,
+      responsibleUserId: linda.id,
       hourlyRate: 850,
       startDate: new Date("2026-04-15"),
       endDate: new Date("2026-06-30"),
@@ -82,6 +149,7 @@ async function main() {
         "Ny läshörna med cirkulära möbler för barnavdelningen. Moodboard godkänd.",
       status: "active",
       customerId: gbg.id,
+      responsibleUserId: linda.id,
       hourlyRate: 850,
       startDate: new Date("2026-05-01"),
     },
@@ -94,6 +162,7 @@ async function main() {
         "150 arbetsplatser med begagnade skrivbord och stolar. Leverans i tre etapper.",
       status: "active",
       customerId: volvo.id,
+      responsibleUserId: caroline.id,
       hourlyRate: 950,
       startDate: new Date("2026-03-01"),
       endDate: new Date("2026-08-31"),
@@ -107,6 +176,7 @@ async function main() {
         "Inredning av ny studenthub. Fokus på flexibla möbler och hållbara material.",
       status: "paused",
       customerId: chalmers.id,
+      responsibleUserId: robert.id,
       hourlyRate: 850,
       startDate: new Date("2026-02-01"),
     },
@@ -119,6 +189,7 @@ async function main() {
         "Offertfas. Konvertera befintlig lokal till modernt kontor med cirkulär profil.",
       status: "active",
       customerId: ica.id,
+      responsibleUserId: linda.id,
       hourlyRate: 950,
     },
   });
@@ -130,10 +201,22 @@ async function main() {
         "Inventering av befintliga möbler i tre förvaltningskontor i Majorna.",
       status: "completed",
       customerId: gbg.id,
+      responsibleUserId: linda.id,
       hourlyRate: 850,
       startDate: new Date("2026-01-10"),
       endDate: new Date("2026-02-15"),
     },
+  });
+
+  // --- Project-Partner assignments ---
+  await prisma.projectPartner.createMany({
+    data: [
+      { projectId: kulturhuset.id, partnerId: adayservice.id, role: "Logistik och leverans" },
+      { projectId: kulturhuset.id, partnerId: snickarna.id, role: "Renovering av möbler" },
+      { projectId: biblioteket.id, partnerId: kladselmakaren.id, role: "Omklädsel sittmöbler" },
+      { projectId: volvoLundby.id, partnerId: adayservice.id, role: "Flytt och leverans, 3 etapper" },
+      { projectId: volvoLundby.id, partnerId: snickarna.id, role: "Skrivbordsrenovering" },
+    ],
   });
 
   // --- Time Entries (spread across active projects) ---
@@ -229,7 +312,7 @@ async function main() {
   });
 
   console.log(
-    "Seed complete: 4 customers, 6 projects, 15 time entries, 3 quotes with items, 7 delivery events"
+    "Seed complete: 3 users, 3 partners, 4 customers, 6 projects, 5 project-partner links, 15 time entries, 3 quotes with items, 7 delivery events"
   );
 }
 

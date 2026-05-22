@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +57,22 @@ export default async function KundDetaljPage({
           )}
         </div>
         <div className="flex gap-2">
+          {customer.onedriveFolderUrl && (
+            <Button
+              variant="outline"
+              size="sm"
+              render={
+                <a
+                  href={customer.onedriveFolderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Öppna i OneDrive
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"

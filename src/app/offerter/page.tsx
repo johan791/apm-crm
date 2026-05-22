@@ -3,6 +3,7 @@ import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -51,11 +52,31 @@ export default async function OfferterPage({
     where.status = status;
   }
 
-  const quotes = await prisma.quote.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: { customer: true, project: true, items: true },
-  });
+  const [quotes, pipelineCounts] = await Promise.all([
+    prisma.quote.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { customer: true, project: true, items: true },
+    }),
+    prisma.quote.groupBy({
+      by: ["status"],
+      _count: { status: true },
+      _sum: undefined,
+    }),
+  ]);
+
+  const pipeline = {
+    draft: 0,
+    sent: 0,
+    accepted: 0,
+    rejected: 0,
+    order: 0,
+  };
+  for (const row of pipelineCounts) {
+    if (row.status in pipeline) {
+      pipeline[row.status as keyof typeof pipeline] = row._count.status;
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -70,6 +91,27 @@ export default async function OfferterPage({
           <Plus className="mr-2 h-4 w-4" />
           Ny offert
         </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {[
+          { key: "draft", label: "Utkast", color: "text-muted-foreground" },
+          { key: "sent", label: "Skickade", color: "text-blue-600" },
+          { key: "accepted", label: "Accepterade", color: "text-green-600" },
+          { key: "rejected", label: "Avvisade", color: "text-red-500" },
+          { key: "order", label: "Order", color: "text-primary" },
+        ].map((stage) => (
+          <Link key={stage.key} href={`/offerter?status=${stage.key}`}>
+            <Card className="transition-colors hover:bg-accent">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground">{stage.label}</p>
+                <p className={`text-2xl font-bold ${stage.color}`}>
+                  {pipeline[stage.key as keyof typeof pipeline]}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

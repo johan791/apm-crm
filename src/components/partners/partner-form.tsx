@@ -4,19 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Customer } from "@/generated/prisma";
+import type { Partner } from "@/generated/prisma";
 
-interface CustomerFormProps {
+interface PartnerFormProps {
   action: (formData: FormData) => Promise<void>;
-  customer?: Customer;
+  partner?: Partner;
 }
 
-export function CustomerForm({ action, customer }: CustomerFormProps) {
+const categories = [
+  { value: "logistics", label: "Logistik" },
+  { value: "carpentry", label: "Snickeri" },
+  { value: "upholstery", label: "Klädsel" },
+  { value: "demolition", label: "Demontering" },
+  { value: "refurbishment", label: "Renovering" },
+  { value: "architect", label: "Arkitekt" },
+  { value: "other", label: "Övrigt" },
+];
+
+export function PartnerForm({ action, partner }: PartnerFormProps) {
   return (
     <form action={action}>
       <Card>
         <CardHeader>
-          <CardTitle>{customer ? "Redigera kund" : "Ny kund"}</CardTitle>
+          <CardTitle>{partner ? "Redigera partner" : "Ny partner"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -26,16 +36,27 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
                 id="companyName"
                 name="companyName"
                 required
-                defaultValue={customer?.companyName}
+                defaultValue={partner?.companyName}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="orgNumber">Organisationsnummer</Label>
-              <Input
-                id="orgNumber"
-                name="orgNumber"
-                defaultValue={customer?.orgNumber ?? ""}
-              />
+              <Label htmlFor="category">Kategori *</Label>
+              <select
+                id="category"
+                name="category"
+                required
+                defaultValue={partner?.category ?? ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="" disabled>
+                  Välj kategori...
+                </option>
+                {categories.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -45,7 +66,7 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
               <Input
                 id="contactPerson"
                 name="contactPerson"
-                defaultValue={customer?.contactPerson ?? ""}
+                defaultValue={partner?.contactPerson ?? ""}
               />
             </div>
             <div className="space-y-2">
@@ -54,7 +75,7 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
                 id="email"
                 name="email"
                 type="email"
-                defaultValue={customer?.email ?? ""}
+                defaultValue={partner?.email ?? ""}
               />
             </div>
           </div>
@@ -65,47 +86,9 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
               <Input
                 id="phone"
                 name="phone"
-                defaultValue={customer?.phone ?? ""}
+                defaultValue={partner?.phone ?? ""}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Adress</Label>
-              <Input
-                id="address"
-                name="address"
-                defaultValue={customer?.address ?? ""}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="zipCode">Postnummer</Label>
-              <Input
-                id="zipCode"
-                name="zipCode"
-                defaultValue={customer?.zipCode ?? ""}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="city">Stad</Label>
-              <Input
-                id="city"
-                name="city"
-                defaultValue={customer?.city ?? ""}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="onedriveFolderUrl">OneDrive-mapp (URL)</Label>
-            <Input
-              id="onedriveFolderUrl"
-              name="onedriveFolderUrl"
-              type="url"
-              placeholder="https://..."
-              defaultValue={customer?.onedriveFolderUrl ?? ""}
-            />
           </div>
 
           <div className="space-y-2">
@@ -114,14 +97,14 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
               id="notes"
               name="notes"
               rows={3}
-              defaultValue={customer?.notes ?? ""}
+              defaultValue={partner?.notes ?? ""}
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
 
           <div className="flex gap-3 pt-2">
             <Button type="submit">
-              {customer ? "Spara ändringar" : "Skapa kund"}
+              {partner ? "Spara ändringar" : "Skapa partner"}
             </Button>
           </div>
         </CardContent>
