@@ -98,14 +98,17 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="onedriveFolderUrl">OneDrive-mapp (URL)</Label>
+            <Label htmlFor="onedriveFolderUrl">OneDrive-mapp</Label>
             <Input
               id="onedriveFolderUrl"
               name="onedriveFolderUrl"
               type="url"
-              placeholder="https://..."
+              placeholder="https://onedrive.live.com/..."
               defaultValue={customer?.onedriveFolderUrl ?? ""}
             />
+            <p className="text-xs text-muted-foreground">
+              Högerklicka på kundens mapp i OneDrive → &quot;Kopiera länk&quot; → klistra in här.
+            </p>
           </div>
 
           <div className="space-y-2">

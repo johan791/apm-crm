@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,22 +57,6 @@ export default async function KundDetaljPage({
           )}
         </div>
         <div className="flex gap-2">
-          {customer.onedriveFolderUrl && (
-            <Button
-              variant="outline"
-              size="sm"
-              render={
-                <a
-                  href={customer.onedriveFolderUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              }
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Öppna i OneDrive
-            </Button>
-          )}
           <Button
             variant="outline"
             size="sm"
@@ -127,17 +111,69 @@ export default async function KundDetaljPage({
           </CardContent>
         </Card>
 
-        {customer.notes && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Anteckningar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{customer.notes}</p>
-            </CardContent>
-          </Card>
-        )}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FolderOpen className="h-4 w-4" />
+              Dokument
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {customer.onedriveFolderUrl ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Kundmapp kopplad till OneDrive.
+                </p>
+                <Button
+                  size="sm"
+                  render={
+                    <a
+                      href={customer.onedriveFolderUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  }
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Öppna i OneDrive
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Ingen OneDrive-mapp kopplad ännu. Koppla kundens dokumentmapp
+                  för snabb åtkomst till ritningar, moodboards och fakturor.
+                </p>
+                <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
+                  <p className="font-medium text-foreground">Så här gör du:</p>
+                  <p>1. Öppna kundens mapp i OneDrive</p>
+                  <p>2. Högerklicka på mappen och välj &quot;Kopiera länk&quot;</p>
+                  <p>3. Klicka &quot;Redigera&quot; ovan och klistra in länken i fältet &quot;OneDrive-mapp&quot;</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={<Link href={`/kunder/${customer.id}/redigera`} />}
+                >
+                  <Link2 className="mr-2 h-4 w-4" />
+                  Koppla OneDrive-mapp
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
+
+      {customer.notes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Anteckningar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm whitespace-pre-wrap">{customer.notes}</p>
+          </CardContent>
+        </Card>
+      )}
 
       <Separator />
 
