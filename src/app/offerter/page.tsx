@@ -61,7 +61,6 @@ export default async function OfferterPage({
     prisma.quote.groupBy({
       by: ["status"],
       _count: { status: true },
-      _sum: undefined,
     }),
   ]);
 
