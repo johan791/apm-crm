@@ -6,6 +6,8 @@ import {
   Clock,
   FileText,
   Truck,
+  Activity,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,8 @@ export default async function DashboardPage() {
     timeEntriesAgg,
     pendingQuoteCount,
     deliveryCount,
+    weekActivities,
+    unlinkedActivities,
   ] = await Promise.all([
     prisma.project.count({ where: { status: "active" } }),
     prisma.project.findMany({
@@ -63,6 +67,28 @@ export default async function DashboardPage() {
     prisma.quote.count({ where: { status: { in: ["sent", "accepted"] } } }),
     prisma.deliveryEvent.count({
       where: { date: { gte: weekStart, lt: weekEnd } },
+    }),
+    prisma.activity.findMany({
+      where: {
+        status: "oppen",
+        dueDate: { gte: weekStart, lt: weekEnd },
+      },
+      orderBy: { dueDate: "asc" },
+      include: {
+        customer: { select: { id: true, companyName: true } },
+        project: { select: { id: true, name: true } },
+      },
+      take: 10,
+    }),
+    prisma.activity.findMany({
+      where: {
+        status: "oppen",
+        customerId: null,
+        projectId: null,
+      },
+      orderBy: { createdAt: "desc" },
+      include: { createdBy: true },
+      take: 10,
     }),
   ]);
 
@@ -132,6 +158,82 @@ export default async function DashboardPage() {
           <Plus className="mr-2 h-4 w-4" />
           Nytt projekt
         </Button>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {weekActivities.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Activity className="h-4 w-4" />
+                Aktiviteter denna vecka
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                render={<Link href="/aktiviteter" />}
+              >
+                Visa alla
+                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {weekActivities.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{a.title ?? a.description.slice(0, 60)}</p>
+                      {a.customer && (
+                        <p className="text-xs text-muted-foreground">{a.customer.companyName}</p>
+                      )}
+                    </div>
+                    {a.dueDate && (
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-3">
+                        {formatDate(a.dueDate)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {unlinkedActivities.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <AlertCircle className="h-4 w-4" />
+                Okopplade anteckningar
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                render={<Link href="/aktiviteter?status=oppen" />}
+              >
+                Visa alla
+                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {unlinkedActivities.map((a) => (
+                  <div key={a.id} className="flex items-center justify-between rounded-md border p-3 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate">{a.title ?? a.description.slice(0, 60)}</p>
+                      {a.createdBy && (
+                        <p className="text-xs text-muted-foreground">{a.createdBy.name}</p>
+                      )}
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap ml-3">
+                      {formatDate(a.createdAt)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {recentProjects.length > 0 && (
