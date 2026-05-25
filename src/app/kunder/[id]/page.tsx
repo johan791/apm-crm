@@ -50,7 +50,7 @@ export default async function KundDetaljPage({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{customer.companyName}</h1>
+          <h1>{customer.companyName}</h1>
           {customer.orgNumber && (
             <p className="text-sm text-muted-foreground">
               Org.nr: {customer.orgNumber}

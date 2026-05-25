@@ -136,6 +136,9 @@
   [data-slot="card"] {
     @apply shadow-sm border-transparent;
   }
+  [data-slot="table-body"] [data-slot="table-row"] {
+    @apply hover:bg-accent/50;
+  }
 }
 
 @media print {

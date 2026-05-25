@@ -71,9 +71,7 @@ export default async function LeveransplaneringPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Leveransplanering
-          </h1>
+          <h1>Leveransplanering</h1>
           <p className="text-muted-foreground">
             Planera leveranser, installationer och upphämtningar
           </p>

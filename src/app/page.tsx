@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  Users,
   FolderKanban,
   Plus,
   ArrowRight,
@@ -14,13 +13,29 @@ import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 
+const statusLabels: Record<string, string> = {
+  active: "Aktivt",
+  completed: "Avslutat",
+  paused: "Pausat",
+  cancelled: "Avbrutet",
+};
+
+const statusVariants: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  active: "default",
+  completed: "secondary",
+  paused: "outline",
+  cancelled: "destructive",
+};
+
 export default async function DashboardPage() {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-  // Week boundaries (Monday to Sunday)
-  const dayOfWeek = now.getDay(); // 0=Sun,1=Mon,...
+  const dayOfWeek = now.getDay();
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() + diffToMonday);
@@ -29,16 +44,12 @@ export default async function DashboardPage() {
   weekEnd.setDate(weekStart.getDate() + 7);
 
   const [
-    customerCount,
-    projectCount,
     activeProjects,
     recentProjects,
     timeEntriesAgg,
-    activeQuoteCount,
+    pendingQuoteCount,
     deliveryCount,
   ] = await Promise.all([
-    prisma.customer.count(),
-    prisma.project.count(),
     prisma.project.count({ where: { status: "active" } }),
     prisma.project.findMany({
       take: 5,
@@ -49,7 +60,7 @@ export default async function DashboardPage() {
       _sum: { hours: true },
       where: { date: { gte: monthStart, lt: monthEnd } },
     }),
-    prisma.quote.count({ where: { status: { not: "draft" } } }),
+    prisma.quote.count({ where: { status: { in: ["sent", "accepted"] } } }),
     prisma.deliveryEvent.count({
       where: { date: { gte: weekStart, lt: weekEnd } },
     }),
@@ -62,82 +73,52 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1>
-          Hej! Här är din översikt
-        </h1>
+        <h1>Hej! Här är din översikt</h1>
         <p className="text-muted-foreground">{todayStr}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Kunder</CardTitle>
-            <Users className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{customerCount}</div>
-            <p className="text-xs text-muted-foreground">registrerade kunder</p>
-          </CardContent>
-        </Card>
-
-        <Card className="transition-colors hover:bg-accent/30">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Projekt</CardTitle>
-            <FolderKanban className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{projectCount}</div>
-            <p className="text-xs text-muted-foreground">totalt antal projekt</p>
-          </CardContent>
-        </Card>
-
-        <Card className="transition-colors hover:bg-accent/30">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Aktiva</CardTitle>
+            <CardTitle className="text-sm font-medium">Aktiva projekt</CardTitle>
             <FolderKanban className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeProjects}</div>
-            <p className="text-xs text-muted-foreground">pågående projekt</p>
+            <p className="text-xs text-muted-foreground">pågående</p>
           </CardContent>
         </Card>
 
         <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Timmar denna månad
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Timmar denna månad</CardTitle>
             <Clock className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{hoursThisMonth.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">rapporterade timmar</p>
+            <p className="text-xs text-muted-foreground">rapporterade</p>
           </CardContent>
         </Card>
 
         <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Aktiva offerter
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Offerter att följa upp</CardTitle>
             <FileText className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activeQuoteCount}</div>
-            <p className="text-xs text-muted-foreground">ej utkast</p>
+            <div className="text-2xl font-bold">{pendingQuoteCount}</div>
+            <p className="text-xs text-muted-foreground">skickade & accepterade</p>
           </CardContent>
         </Card>
 
         <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Leveranser denna vecka
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Leveranser denna vecka</CardTitle>
             <Truck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{deliveryCount}</div>
-            <p className="text-xs text-muted-foreground">planerade leveranser</p>
+            <p className="text-xs text-muted-foreground">planerade</p>
           </CardContent>
         </Card>
       </div>
@@ -168,27 +149,17 @@ export default async function DashboardPage() {
                   href={`/projekt/${project.id}`}
                   className="flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-accent"
                 >
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-medium">{project.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {project.customer.companyName}
-                      </p>
-                    </div>
+                  <div>
+                    <p className="font-medium">{project.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {project.customer.companyName}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
-                      variant={
-                        project.status === "active" ? "default" : "secondary"
-                      }
+                      variant={statusVariants[project.status] ?? "outline"}
                     >
-                      {project.status === "active"
-                        ? "Aktiv"
-                        : project.status === "completed"
-                          ? "Klar"
-                          : project.status === "cancelled"
-                            ? "Avbruten"
-                            : project.status}
+                      {statusLabels[project.status] ?? project.status}
                     </Badge>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>

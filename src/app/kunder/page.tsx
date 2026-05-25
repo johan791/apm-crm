@@ -37,7 +37,7 @@ export default async function KunderPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Kunder</h1>
+          <h1>Kunder</h1>
           <p className="text-muted-foreground">
             {customers.length} {customers.length === 1 ? "kund" : "kunder"}
           </p>

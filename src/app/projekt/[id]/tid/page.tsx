@@ -52,9 +52,7 @@ export default async function ProjektTidPage({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold">
-            Tidrapportering — {project.name}
-          </h1>
+          <h1>Tidrapportering — {project.name}</h1>
           <Link
             href={`/kunder/${project.customer.id}`}
             className="text-sm text-muted-foreground hover:underline"

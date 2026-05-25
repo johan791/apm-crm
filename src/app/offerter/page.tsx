@@ -81,7 +81,7 @@ export default async function OfferterPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Offerter</h1>
+          <h1>Offerter</h1>
           <p className="text-muted-foreground">
             {quotes.length} {quotes.length === 1 ? "offert" : "offerter"}
           </p>

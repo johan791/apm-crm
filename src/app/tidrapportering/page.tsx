@@ -49,9 +49,7 @@ export default async function TidrapporteringPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Tidrapportering
-          </h1>
+          <h1>Tidrapportering</h1>
           <p className="text-muted-foreground">
             {timeEntries.length}{" "}
             {timeEntries.length === 1 ? "tidspost" : "tidsposter"}

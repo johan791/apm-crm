@@ -70,7 +70,7 @@ export default async function PartnerDetaljPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold">{partner.companyName}</h1>
+            <h1>{partner.companyName}</h1>
             <Badge variant="secondary">
               {categoryLabels[partner.category] ?? partner.category}
             </Badge>
