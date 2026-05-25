@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText, Users } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText, Users, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,8 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/format";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { ContactList } from "@/components/customers/contact-list";
+import { ActivityList } from "@/components/activities/activity-list";
+import { QuickActivityForm } from "@/components/activities/quick-activity-form";
 
 const statusLabels: Record<string, string> = {
   active: "Aktivt",
@@ -57,6 +59,10 @@ export default async function KundDetaljPage({
     include: {
       responsibleUser: true,
       contacts: { orderBy: { name: "asc" } },
+      activities: {
+        orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+        include: { createdBy: true, assignedTo: true },
+      },
       projects: { orderBy: { updatedAt: "desc" } },
       quotes: {
         orderBy: { createdAt: "desc" },
@@ -204,6 +210,19 @@ export default async function KundDetaljPage({
             customerId={customer.id}
             contacts={customer.contacts}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Activity className="h-4 w-4" />
+            Aktiviteter ({customer.activities.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <ActivityList activities={customer.activities} />
+          <QuickActivityForm customerId={customer.id} />
         </CardContent>
       </Card>
 

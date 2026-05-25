@@ -12,6 +12,7 @@ import {
   CalendarDays,
   Handshake,
   LogOut,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -37,7 +38,10 @@ type NavSection = {
 
 const navSections: NavSection[] = [
   {
-    items: [{ href: "/", label: "Dashboard", icon: LayoutDashboard }],
+    items: [
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/aktiviteter", label: "Aktiviteter", icon: Activity },
+    ],
   },
   {
     label: "Hantera",

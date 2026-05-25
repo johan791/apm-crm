@@ -17,6 +17,8 @@ model User {
   role                 String     @default("user")
   responsibleCustomers Customer[]
   responsibleProjects  Project[]
+  activities           Activity[] @relation("CreatedActivities")
+  assignedActivities   Activity[] @relation("AssignedActivities")
   createdAt            DateTime   @default(now()) @map("created_at")
   updatedAt            DateTime   @updatedAt @map("updated_at")
 
@@ -40,6 +42,7 @@ model Customer {
   contacts          Contact[]
   projects          Project[]
   quotes            Quote[]
+  activities        Activity[]
   deliveryEvents    DeliveryEvent[]
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
@@ -76,6 +79,7 @@ model Project {
   partners          ProjectPartner[]
   timeEntries       TimeEntry[]
   quotes            Quote[]
+  activities        Activity[]
   deliveryEvents    DeliveryEvent[]
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
@@ -174,4 +178,29 @@ model ProjectPartner {
 
   @@unique([projectId, partnerId])
   @@map("project_partners")
+}
+
+model Activity {
+  id                  String    @id @default(cuid())
+  type                String    @default("anteckning")
+  title               String?
+  description         String
+  status              String    @default("oppen")
+  dueDate             DateTime? @map("due_date")
+  customer            Customer? @relation(fields: [customerId], references: [id])
+  customerId          String?   @map("customer_id")
+  project             Project?  @relation(fields: [projectId], references: [id])
+  projectId           String?   @map("project_id")
+  unlinkedCustomerText String?  @map("unlinked_customer_text")
+  assignedTo          User?     @relation("AssignedActivities", fields: [assignedToId], references: [id])
+  assignedToId        String?   @map("assigned_to_id")
+  createdBy           User      @relation("CreatedActivities", fields: [createdById], references: [id])
+  createdById         String    @map("created_by_id")
+  relatedActivity     Activity? @relation("RelatedActivities", fields: [relatedActivityId], references: [id])
+  relatedActivityId   String?   @map("related_activity_id")
+  childActivities     Activity[] @relation("RelatedActivities")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  @@map("activities")
 }

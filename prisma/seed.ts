@@ -329,8 +329,23 @@ async function main() {
     ],
   });
 
+  // --- Activities ---
+  await prisma.activity.createMany({
+    data: [
+      { type: "samtal", description: "Ringde Maria om färgval till plan 3. Hon vill se fler alternativ i ljus ek.", customerId: gbg.id, projectId: kulturhuset.id, assignedToId: linda.id, createdById: linda.id, status: "klar" },
+      { type: "mote", description: "Platsbesök Kulturhuset med A Day Service. Gick igenom logistik för leverans v.21.", customerId: gbg.id, projectId: kulturhuset.id, assignedToId: linda.id, createdById: linda.id, status: "klar" },
+      { type: "uppfoljning", title: "Skicka uppdaterad offert", description: "Maria vill ha en reviderad offert med de nya stolarna.", customerId: gbg.id, projectId: kulturhuset.id, assignedToId: linda.id, createdById: linda.id, dueDate: new Date("2026-05-28"), status: "oppen" },
+      { type: "samtal", description: "Pratat med Erik om etapp 2. Skrivborden ska levereras port B, godsmottagning.", customerId: volvo.id, projectId: volvoLundby.id, assignedToId: caroline.id, createdById: caroline.id, status: "klar" },
+      { type: "uppgift", title: "Boka transport etapp 2", description: "Kontakta A Day Service för transport 26/5. Bekräfta tid med Erik.", customerId: volvo.id, projectId: volvoLundby.id, assignedToId: caroline.id, createdById: caroline.id, dueDate: new Date("2026-05-25"), status: "oppen" },
+      { type: "anteckning", description: "Anna ringde och sa att studenthub-projektet pausas till hösten pga budgetbeslut.", customerId: chalmers.id, projectId: studenthub.id, assignedToId: robert.id, createdById: robert.id, status: "klar" },
+      { type: "samtal", description: "Hade ett samtal med Per på ICA om kontorsplaneringen. De inväntar planritning från arkitekten.", customerId: ica.id, projectId: icaSolna.id, assignedToId: linda.id, createdById: linda.id, status: "klar" },
+      { type: "uppfoljning", title: "Följa upp planritning ICA", description: "Per sa att arkitekten ska leverera ritning senast 2 juni. Ring och kolla.", customerId: ica.id, projectId: icaSolna.id, assignedToId: linda.id, createdById: linda.id, dueDate: new Date("2026-06-03"), status: "oppen" },
+      { type: "anteckning", description: "Fick tips om ny kund via LinkedIn: Castellum Göteborg, planerar storskalig kontorsrenovering hösten 2026.", unlinkedCustomerText: "Castellum Göteborg", assignedToId: linda.id, createdById: linda.id, status: "oppen" },
+    ],
+  });
+
   console.log(
-    "Seed complete: 3 users, 3 partners, 4 customers, 9 contacts, 6 projects, 5 project-partner links, 15 time entries, 3 quotes with items, 7 delivery events"
+    "Seed complete: 3 users, 3 partners, 4 customers, 9 contacts, 6 projects, 5 project-partner links, 15 time entries, 3 quotes with items, 7 delivery events, 9 activities"
   );
 }
 
