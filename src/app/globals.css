@@ -126,6 +126,7 @@
   }
   html {
     @apply font-sans;
+    font-size: 18px;
   }
   h1 {
     @apply text-xl font-semibold tracking-tight;
