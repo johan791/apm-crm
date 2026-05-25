@@ -2,16 +2,20 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
+import { currentUserId } from "@/lib/current-user";
 import { ActivityList } from "@/components/activities/activity-list";
 
 export default async function AktiviteterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; typ?: string }>;
+  searchParams: Promise<{ status?: string; typ?: string; visa?: string }>;
 }) {
   const params = await searchParams;
   const statusFilter = params.status ?? "oppen";
   const typFilter = params.typ;
+  const visaFilter = params.visa ?? "alla";
+
+  const userId = await currentUserId();
 
   const where: Record<string, unknown> = {};
   if (statusFilter && statusFilter !== "alla") {
@@ -19,6 +23,9 @@ export default async function AktiviteterPage({
   }
   if (typFilter) {
     where.type = typFilter;
+  }
+  if (visaFilter === "mina") {
+    where.OR = [{ createdById: userId }, { assignedToId: userId }];
   }
 
   const activities = await prisma.activity.findMany({
@@ -65,6 +72,24 @@ export default async function AktiviteterPage({
       </div>
 
       <div className="flex gap-2 flex-wrap">
+        {[
+          { value: "mina", label: "Mina" },
+          { value: "alla", label: "Alla" },
+        ].map((opt) => (
+          <Button
+            key={opt.value}
+            variant={visaFilter === opt.value ? "default" : "outline"}
+            size="sm"
+            render={
+              <Link
+                href={`/aktiviteter?visa=${opt.value}&status=${statusFilter}${typFilter ? `&typ=${typFilter}` : ""}`}
+              />
+            }
+          >
+            {opt.label}
+          </Button>
+        ))}
+        <span className="mx-2 border-l" />
         {statusOptions.map((opt) => (
           <Button
             key={opt.value}
@@ -72,7 +97,7 @@ export default async function AktiviteterPage({
             size="sm"
             render={
               <Link
-                href={`/aktiviteter?status=${opt.value}${typFilter ? `&typ=${typFilter}` : ""}`}
+                href={`/aktiviteter?visa=${visaFilter}&status=${opt.value}${typFilter ? `&typ=${typFilter}` : ""}`}
               />
             }
           >
@@ -89,7 +114,7 @@ export default async function AktiviteterPage({
             size="sm"
             render={
               <Link
-                href={`/aktiviteter?status=${statusFilter}${opt.value ? `&typ=${opt.value}` : ""}`}
+                href={`/aktiviteter?visa=${visaFilter}&status=${statusFilter}${opt.value ? `&typ=${opt.value}` : ""}`}
               />
             }
           >

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
+import { currentUserId } from "@/lib/current-user";
 import { formatDate } from "@/lib/format";
 
 const statusLabels: Record<string, string> = {
@@ -33,6 +34,7 @@ const statusVariants: Record<
 };
 
 export default async function DashboardPage() {
+  const userId = await currentUserId();
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -72,6 +74,7 @@ export default async function DashboardPage() {
       where: {
         status: "oppen",
         dueDate: { gte: weekStart, lt: weekEnd },
+        OR: [{ createdById: userId }, { assignedToId: userId }],
       },
       orderBy: { dueDate: "asc" },
       include: {
@@ -166,12 +169,12 @@ export default async function DashboardPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
                 <Activity className="h-4 w-4" />
-                Aktiviteter denna vecka
+                Mina aktiviteter denna vecka
               </CardTitle>
               <Button
                 variant="ghost"
                 size="sm"
-                render={<Link href="/aktiviteter" />}
+                render={<Link href="/aktiviteter?visa=mina" />}
               >
                 Visa alla
                 <ArrowRight className="ml-1 h-3.5 w-3.5" />
