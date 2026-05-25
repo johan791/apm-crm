@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
+import { formatCurrency } from "@/lib/format";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 
 const statusLabels: Record<string, string> = {
@@ -25,6 +26,25 @@ const statusVariants: Record<
   cancelled: "destructive",
 };
 
+const quoteStatusLabels: Record<string, string> = {
+  draft: "Utkast",
+  sent: "Skickad",
+  accepted: "Accepterad",
+  rejected: "Avvisad",
+  order: "Order",
+};
+
+const quoteStatusVariants: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  draft: "outline",
+  sent: "secondary",
+  accepted: "default",
+  rejected: "destructive",
+  order: "default",
+};
+
 export default async function KundDetaljPage({
   params,
 }: {
@@ -36,6 +56,10 @@ export default async function KundDetaljPage({
     include: {
       responsibleUser: true,
       projects: { orderBy: { updatedAt: "desc" } },
+      quotes: {
+        orderBy: { createdAt: "desc" },
+        include: { items: true },
+      },
     },
   });
 
@@ -216,6 +240,63 @@ export default async function KundDetaljPage({
                 </Badge>
               </Link>
             ))}
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">
+            <FileText className="inline h-4 w-4 mr-2" />
+            Offerter ({customer.quotes.length})
+          </h2>
+          <Button
+            size="sm"
+            render={<Link href={`/offerter/ny?kund=${customer.id}`} />}
+          >
+            Ny offert
+          </Button>
+        </div>
+
+        {customer.quotes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Inga offerter för denna kund ännu.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {customer.quotes.map((quote) => {
+              const total = quote.items.reduce((sum, item) => {
+                const line = Number(item.quantity) * Number(item.unitPrice);
+                const discounted = line * (1 - Number(item.discount) / 100);
+                return sum + discounted;
+              }, 0);
+
+              return (
+                <Link
+                  key={quote.id}
+                  href={`/offerter/${quote.id}`}
+                  className="flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-accent"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">
+                      Offert #{quote.quoteNumber}
+                    </span>
+                    <Badge
+                      variant={
+                        quoteStatusVariants[quote.status] ?? "outline"
+                      }
+                    >
+                      {quoteStatusLabels[quote.status] ?? quote.status}
+                    </Badge>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {formatCurrency(total)}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
