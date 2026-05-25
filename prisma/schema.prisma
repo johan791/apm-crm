@@ -19,6 +19,7 @@ model User {
   responsibleProjects  Project[]
   activities           Activity[] @relation("CreatedActivities")
   assignedActivities   Activity[] @relation("AssignedActivities")
+  invoiceBases         InvoiceBasis[]
   createdAt            DateTime   @default(now()) @map("created_at")
   updatedAt            DateTime   @updatedAt @map("updated_at")
 
@@ -80,6 +81,7 @@ model Project {
   timeEntries       TimeEntry[]
   quotes            Quote[]
   activities        Activity[]
+  invoiceBases      InvoiceBasis[]
   deliveryEvents    DeliveryEvent[]
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
@@ -88,16 +90,39 @@ model Project {
 }
 
 model TimeEntry {
-  id          String   @id @default(cuid())
-  date        DateTime
-  hours       Decimal  @db.Decimal(5, 2)
-  description String?
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String   @map("project_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String        @id @default(cuid())
+  date           DateTime
+  hours          Decimal       @db.Decimal(5, 2)
+  description    String?
+  invoiced       Boolean       @default(false)
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      String        @map("project_id")
+  invoiceBasis   InvoiceBasis? @relation(fields: [invoiceBasisId], references: [id])
+  invoiceBasisId String?       @map("invoice_basis_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
   @@map("time_entries")
+}
+
+model InvoiceBasis {
+  id          String      @id @default(cuid())
+  number      Int         @unique
+  project     Project     @relation(fields: [projectId], references: [id])
+  projectId   String      @map("project_id")
+  periodFrom  DateTime    @map("period_from")
+  periodTo    DateTime    @map("period_to")
+  totalHours  Decimal     @db.Decimal(7, 2) @map("total_hours")
+  totalAmount Decimal?    @db.Decimal(12, 2) @map("total_amount")
+  status      String      @default("skapad")
+  notes       String?
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  createdById String      @map("created_by_id")
+  timeEntries TimeEntry[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("invoice_bases")
 }
 
 model Quote {

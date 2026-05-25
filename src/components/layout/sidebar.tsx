@@ -13,6 +13,7 @@ import {
   Handshake,
   LogOut,
   Activity,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -56,6 +57,7 @@ const navSections: NavSection[] = [
     items: [
       { href: "/offerter", label: "Offerter", icon: FileText },
       { href: "/tidrapportering", label: "Tidrapportering", icon: Clock },
+      { href: "/fakturaunderlag", label: "Fakturaunderlag", icon: Receipt },
     ],
   },
   {

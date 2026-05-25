@@ -8,6 +8,7 @@ import {
   Truck,
   Activity,
   AlertCircle,
+  Receipt,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export default async function DashboardPage() {
     deliveryCount,
     weekActivities,
     unlinkedActivities,
+    uninvoicedAgg,
   ] = await Promise.all([
     prisma.project.count({ where: { status: "active" } }),
     prisma.project.findMany({
@@ -93,9 +95,14 @@ export default async function DashboardPage() {
       include: { createdBy: true },
       take: 10,
     }),
+    prisma.timeEntry.aggregate({
+      where: { invoiced: false },
+      _sum: { hours: true },
+    }),
   ]);
 
   const hoursThisMonth = Number(timeEntriesAgg._sum.hours ?? 0);
+  const uninvoicedHours = Number(uninvoicedAgg._sum.hours ?? 0);
 
   const todayStr = formatDate(now);
 
@@ -106,7 +113,7 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">{todayStr}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Aktiva projekt</CardTitle>
@@ -150,6 +157,19 @@ export default async function DashboardPage() {
             <p className="text-xs text-muted-foreground">planerade</p>
           </CardContent>
         </Card>
+
+        <Link href="/fakturaunderlag" className="block">
+          <Card className="transition-colors hover:bg-accent/30 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Ofakturerade timmar</CardTitle>
+              <Receipt className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{uninvoicedHours.toFixed(1)}</div>
+              <p className="text-xs text-muted-foreground">att fakturera</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="flex gap-3">

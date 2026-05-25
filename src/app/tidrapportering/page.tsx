@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, Search, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -113,6 +114,7 @@ export default async function TidrapporteringPage({
                 <TableHead>Projekt</TableHead>
                 <TableHead className="hidden sm:table-cell">Kund</TableHead>
                 <TableHead className="text-right">Timmar</TableHead>
+                <TableHead className="hidden sm:table-cell">Status</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Beskrivning
                 </TableHead>
@@ -142,6 +144,11 @@ export default async function TidrapporteringPage({
                   </TableCell>
                   <TableCell className="text-right">
                     {formatHours(entry.hours)}
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {entry.invoiced && (
+                      <Badge variant="secondary" className="text-xs">Fakturerad</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell max-w-xs truncate text-muted-foreground">
                     {entry.description ?? "–"}
