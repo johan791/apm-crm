@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 import { CalendarHeader } from "@/components/delivery/calendar-header";
 import { CalendarGrid } from "@/components/delivery/calendar-grid";
+import { EventList } from "@/components/delivery/event-list";
 
 const eventTypeLabels: Record<string, string> = {
   delivery: "Leverans",
@@ -22,12 +23,13 @@ const eventTypeColors: Record<string, string> = {
 export default async function LeveransplaneringPage({
   searchParams,
 }: {
-  searchParams: Promise<{ year?: string; month?: string }>;
+  searchParams: Promise<{ year?: string; month?: string; view?: string }>;
 }) {
   const params = await searchParams;
   const now = new Date();
   const year = params.year ? parseInt(params.year, 10) : now.getFullYear();
   const month = params.month ? parseInt(params.month, 10) : now.getMonth();
+  const view = params.view === "list" ? "list" : "calendar";
 
   // Fetch events for the displayed month
   const startOfMonth = new Date(year, month, 1);
@@ -82,16 +84,25 @@ export default async function LeveransplaneringPage({
         </Button>
       </div>
 
-      <CalendarHeader year={year} month={month} />
+      <CalendarHeader year={year} month={month} view={view} />
 
-      <CalendarGrid
-        events={events.map((e) => ({
-          ...e,
-          date: new Date(e.date),
-        }))}
-        year={year}
-        month={month}
-      />
+      {view === "calendar" ? (
+        <CalendarGrid
+          events={events.map((e) => ({
+            ...e,
+            date: new Date(e.date),
+          }))}
+          year={year}
+          month={month}
+        />
+      ) : (
+        <EventList
+          events={events.map((e) => ({
+            ...e,
+            date: new Date(e.date),
+          }))}
+        />
+      )}
 
       {/* Upcoming events */}
       <Card>
