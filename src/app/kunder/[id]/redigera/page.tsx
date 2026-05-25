@@ -12,7 +12,10 @@ export default async function RedigeraKundPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const customer = await prisma.customer.findUnique({ where: { id } });
+  const [customer, users] = await Promise.all([
+    prisma.customer.findUnique({ where: { id } }),
+    prisma.user.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   if (!customer) notFound();
 
@@ -28,7 +31,7 @@ export default async function RedigeraKundPage({
         <ArrowLeft className="mr-2 h-4 w-4" />
         Tillbaka
       </Button>
-      <CustomerForm action={updateWithId} customer={customer} />
+      <CustomerForm action={updateWithId} customer={customer} users={users} />
     </div>
   );
 }

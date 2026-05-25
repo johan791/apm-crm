@@ -17,6 +17,7 @@ export async function createCustomer(formData: FormData) {
       zipCode: (formData.get("zipCode") as string) || null,
       onedriveFolderUrl: (formData.get("onedriveFolderUrl") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      responsibleUserId: (formData.get("responsibleUserId") as string) || null,
     },
   });
 
@@ -39,6 +40,7 @@ export async function updateCustomer(id: string, formData: FormData) {
       zipCode: (formData.get("zipCode") as string) || null,
       onedriveFolderUrl: (formData.get("onedriveFolderUrl") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      responsibleUserId: (formData.get("responsibleUserId") as string) || null,
     },
   });
 

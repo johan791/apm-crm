@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2 } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ export default async function KundDetaljPage({
   const customer = await prisma.customer.findUnique({
     where: { id },
     include: {
+      responsibleUser: true,
       projects: { orderBy: { updatedAt: "desc" } },
     },
   });
@@ -79,6 +80,13 @@ export default async function KundDetaljPage({
               <div className="flex items-center gap-2 text-sm">
                 <Building className="h-4 w-4 text-muted-foreground" />
                 {customer.contactPerson}
+              </div>
+            )}
+            {customer.responsibleUser && (
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Ansvarig:</span>
+                {customer.responsibleUser.name}
               </div>
             )}
             {customer.email && (

@@ -11,9 +11,10 @@ export default async function NyttProjektPage({
   searchParams: Promise<{ kund?: string }>;
 }) {
   const { kund } = await searchParams;
-  const customers = await prisma.customer.findMany({
-    orderBy: { companyName: "asc" },
-  });
+  const [customers, users] = await Promise.all([
+    prisma.customer.findMany({ orderBy: { companyName: "asc" } }),
+    prisma.user.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -25,6 +26,7 @@ export default async function NyttProjektPage({
         action={createProject}
         customers={customers}
         defaultCustomerId={kund}
+        users={users}
       />
     </div>
   );

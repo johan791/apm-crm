@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Customer } from "@/generated/prisma";
+import type { Customer, User } from "@/generated/prisma";
 
 interface CustomerFormProps {
   action: (formData: FormData) => Promise<void>;
   customer?: Customer;
+  users?: User[];
 }
 
-export function CustomerForm({ action, customer }: CustomerFormProps) {
+export function CustomerForm({ action, customer, users }: CustomerFormProps) {
   return (
     <form action={action}>
       <Card>
@@ -56,6 +57,25 @@ export function CustomerForm({ action, customer }: CustomerFormProps) {
                 type="email"
                 defaultValue={customer?.email ?? ""}
               />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="responsibleUserId">Ansvarig</Label>
+              <select
+                id="responsibleUserId"
+                name="responsibleUserId"
+                defaultValue={customer?.responsibleUserId ?? ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Ingen ansvarig</option>
+                {users?.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

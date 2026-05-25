@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus } from "lucide-react";
+import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus, User, Users, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
+import { Badge } from "@/components/ui/badge";
 import { StatusSelect } from "@/components/projects/status-select";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import { formatDate as fmtDate, formatHours, formatCurrency } from "@/lib/format";
@@ -13,6 +14,16 @@ function formatDate(date: Date | null) {
   if (!date) return "–";
   return date.toLocaleDateString("sv-SE");
 }
+
+const categoryLabels: Record<string, string> = {
+  logistics: "Logistik",
+  carpentry: "Snickeri",
+  upholstery: "Klädsel",
+  demolition: "Demontering",
+  refurbishment: "Renovering",
+  architect: "Arkitekt",
+  other: "Övrigt",
+};
 
 export default async function ProjektDetaljPage({
   params,
@@ -24,6 +35,8 @@ export default async function ProjektDetaljPage({
     where: { id },
     include: {
       customer: true,
+      responsibleUser: true,
+      partners: { include: { partner: true } },
       timeEntries: { orderBy: { date: "desc" }, take: 5 },
     },
   });
@@ -102,6 +115,13 @@ export default async function ProjektDetaljPage({
                 {project.customer.companyName}
               </Link>
             </div>
+            {project.responsibleUser && (
+              <div className="flex items-center gap-2 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Ansvarig:</span>
+                {project.responsibleUser.name}
+              </div>
+            )}
             {project.hourlyRate && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -184,6 +204,44 @@ export default async function ProjektDetaljPage({
           </CardContent>
         </Card>
       </div>
+
+      {project.partners.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Users className="h-4 w-4" />
+              Partners ({project.partners.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {project.partners.map((pp) => (
+                <div
+                  key={pp.id}
+                  className="flex items-center justify-between rounded-md border p-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/partners/${pp.partner.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {pp.partner.companyName}
+                    </Link>
+                    <Badge variant="secondary">
+                      {categoryLabels[pp.partner.category] ?? pp.partner.category}
+                    </Badge>
+                  </div>
+                  {pp.role && (
+                    <span className="text-sm text-muted-foreground">
+                      {pp.role}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

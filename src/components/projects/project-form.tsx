@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Project, Customer } from "@/generated/prisma";
+import type { Project, Customer, User } from "@/generated/prisma";
 
 interface ProjectFormProps {
   action: (formData: FormData) => Promise<void>;
   customers: Customer[];
   project?: Project;
   defaultCustomerId?: string;
+  users?: User[];
 }
 
 const statuses = [
@@ -30,6 +31,7 @@ export function ProjectForm({
   customers,
   project,
   defaultCustomerId,
+  users,
 }: ProjectFormProps) {
   return (
     <form action={action}>
@@ -108,6 +110,22 @@ export function ProjectForm({
                 min="0"
                 defaultValue={project?.hourlyRate?.toString() ?? ""}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="responsibleUserId">Ansvarig</Label>
+              <select
+                id="responsibleUserId"
+                name="responsibleUserId"
+                defaultValue={project?.responsibleUserId ?? ""}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Ingen ansvarig</option>
+                {users?.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

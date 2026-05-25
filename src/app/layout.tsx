@@ -38,7 +38,7 @@ export default function RootLayout({
             <div className="print:hidden">
               <MobileNav />
             </div>
-            <main className="flex-1 p-4 md:p-8 print:p-0">{children}</main>
+            <main className="flex-1 p-4 md:p-6 print:p-0">{children}</main>
           </div>
         </div>
       </body>

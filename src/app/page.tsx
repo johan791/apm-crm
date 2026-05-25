@@ -62,19 +62,17 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1>
           Hej! Här är din översikt
         </h1>
         <p className="text-muted-foreground">{todayStr}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
+        <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Kunder</CardTitle>
-            <div className="rounded-full bg-primary/10 p-2">
-              <Users className="h-4 w-4 text-primary" />
-            </div>
+            <Users className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{customerCount}</div>
@@ -82,12 +80,10 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Projekt</CardTitle>
-            <div className="rounded-full bg-primary/10 p-2">
-              <FolderKanban className="h-4 w-4 text-primary" />
-            </div>
+            <FolderKanban className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{projectCount}</div>
@@ -95,12 +91,10 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Aktiva</CardTitle>
-            <div className="rounded-full bg-primary/10 p-2">
-              <FolderKanban className="h-4 w-4 text-primary" />
-            </div>
+            <FolderKanban className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeProjects}</div>
@@ -108,14 +102,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Timmar denna månad
             </CardTitle>
-            <div className="rounded-full bg-primary/10 p-2">
-              <Clock className="h-4 w-4 text-primary" />
-            </div>
+            <Clock className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{hoursThisMonth.toFixed(1)}</div>
@@ -123,14 +115,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Aktiva offerter
             </CardTitle>
-            <div className="rounded-full bg-primary/10 p-2">
-              <FileText className="h-4 w-4 text-primary" />
-            </div>
+            <FileText className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeQuoteCount}</div>
@@ -138,14 +128,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="transition-colors hover:bg-accent/30">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">
               Leveranser denna vecka
             </CardTitle>
-            <div className="rounded-full bg-primary/10 p-2">
-              <Truck className="h-4 w-4 text-primary" />
-            </div>
+            <Truck className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{deliveryCount}</div>

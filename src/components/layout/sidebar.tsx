@@ -85,8 +85,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary/10 text-primary border-l-2 border-primary font-semibold"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    ? "bg-primary/8 text-primary font-medium"
+                    : "text-muted-foreground hover:bg-accent/60"
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -102,7 +102,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 function SidebarHeader() {
   return (
-    <div className="flex h-14 items-center border-b px-4">
+    <div className="flex h-14 items-center mb-2 px-4">
       <Link href="/" className="flex items-center gap-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
           A
@@ -118,7 +118,7 @@ function SidebarHeader() {
 
 function SidebarFooter() {
   return (
-    <div className="border-t p-3">
+    <div className="mt-2 p-3 pt-3">
       <div className="flex items-center gap-3">
         <Avatar size="sm">
           <AvatarFallback>AP</AvatarFallback>
@@ -138,7 +138,7 @@ function SidebarFooter() {
 
 export function DesktopSidebar() {
   return (
-    <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:bg-card h-screen sticky top-0">
+    <aside className="hidden md:flex md:w-60 md:flex-col md:bg-card h-screen sticky top-0">
       <SidebarHeader />
       <div className="flex-1 py-4 overflow-y-auto">
         <NavLinks />
@@ -152,7 +152,7 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="md:hidden flex h-14 items-center border-b px-4 bg-card">
+    <div className="md:hidden flex h-14 items-center shadow-sm px-4 bg-card">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger
           render={

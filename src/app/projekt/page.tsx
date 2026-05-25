@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,7 @@ export default async function ProjektPage({
   const projects = await prisma.project.findMany({
     where,
     orderBy: { updatedAt: "desc" },
-    include: { customer: true },
+    include: { customer: true, quotes: { select: { id: true, status: true } } },
   });
 
   return (
@@ -159,11 +159,20 @@ export default async function ProjektPage({
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={statusVariants[project.status] ?? "outline"}
-                    >
-                      {statusLabels[project.status] ?? project.status}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant={statusVariants[project.status] ?? "outline"}
+                      >
+                        {statusLabels[project.status] ?? project.status}
+                      </Badge>
+                      {project.quotes.length > 0 &&
+                        !project.quotes.some((q) => q.status === "accepted") && (
+                          <Badge variant="outline" className="gap-1 text-xs">
+                            <FileText className="h-3 w-3" />
+                            Offertfas
+                          </Badge>
+                        )}
+                    </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-right">
                     {project.hourlyRate
