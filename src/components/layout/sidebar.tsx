@@ -11,12 +11,18 @@ import {
   FileText,
   CalendarDays,
   Handshake,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+interface SessionUser {
+  name?: string | null;
+  email?: string | null;
+}
 
 type NavItem = {
   href: string;
@@ -116,39 +122,51 @@ function SidebarHeader() {
   );
 }
 
-function SidebarFooter() {
+function SidebarFooter({ user }: { user: SessionUser }) {
+  const initials = (user.name ?? "?")
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
     <div className="mt-2 p-3 pt-3">
       <div className="flex items-center gap-3">
         <Avatar size="sm">
-          <AvatarFallback>AP</AvatarFallback>
+          <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium leading-none">
-            APM Project
+            {user.name}
           </p>
           <p className="truncate text-xs text-muted-foreground mt-0.5">
-            admin@apmproject.se
+            {user.email}
           </p>
         </div>
+        <form action="/api/auth/signout" method="post">
+          <Button variant="ghost" size="sm" type="submit" title="Logga ut">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </form>
       </div>
     </div>
   );
 }
 
-export function DesktopSidebar() {
+export function DesktopSidebar({ user }: { user: SessionUser }) {
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:bg-card h-screen sticky top-0">
       <SidebarHeader />
       <div className="flex-1 py-4 overflow-y-auto">
         <NavLinks />
       </div>
-      <SidebarFooter />
+      <SidebarFooter user={user} />
     </aside>
   );
 }
 
-export function MobileNav() {
+export function MobileNav({ user }: { user: SessionUser }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -167,7 +185,7 @@ export function MobileNav() {
           <div className="flex-1 py-4 overflow-y-auto">
             <NavLinks onNavigate={() => setOpen(false)} />
           </div>
-          <SidebarFooter />
+          <SidebarFooter user={user} />
         </SheetContent>
       </Sheet>
       <p className="text-sm font-semibold">APM Project</p>

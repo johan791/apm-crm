@@ -1,16 +1,19 @@
 import { PrismaClient } from "../src/generated/prisma";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Seeding database...");
 
+  const hash = (pw: string) => bcrypt.hashSync(pw, 10);
+
   // --- Users ---
   const linda = await prisma.user.create({
     data: {
       email: "linda@apmproject.se",
       name: "Linda",
-      passwordHash: "placeholder",
+      passwordHash: hash("apm2026"),
       role: "admin",
     },
   });
@@ -19,7 +22,7 @@ async function main() {
     data: {
       email: "caroline@apmproject.se",
       name: "Caroline",
-      passwordHash: "placeholder",
+      passwordHash: hash("apm2026"),
       role: "user",
     },
   });
@@ -28,7 +31,7 @@ async function main() {
     data: {
       email: "robert@apmproject.se",
       name: "Robert",
-      passwordHash: "placeholder",
+      passwordHash: hash("apm2026"),
       role: "user",
     },
   });
