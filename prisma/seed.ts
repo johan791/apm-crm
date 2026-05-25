@@ -127,6 +127,21 @@ async function main() {
     },
   });
 
+  // --- Contacts ---
+  await prisma.contact.createMany({
+    data: [
+      { customerId: gbg.id, name: "Maria Andersson", role: "Upphandlingsansvarig", email: "maria.andersson@goteborg.se", phone: "031-365 00 01" },
+      { customerId: gbg.id, name: "Johan Bergman", role: "Fastighetschef", email: "johan.bergman@goteborg.se", phone: "031-365 00 15" },
+      { customerId: volvo.id, name: "Erik Johansson", role: "Facility Manager", email: "erik.johansson@volvo.com", phone: "031-66 00 01" },
+      { customerId: volvo.id, name: "Sara Lindgren", role: "Inköpare", email: "sara.lindgren@volvo.com", phone: "031-66 00 42" },
+      { customerId: volvo.id, name: "Magnus Holm", role: "Projektledare", email: "magnus.holm@volvo.com", phone: "031-66 00 88" },
+      { customerId: chalmers.id, name: "Anna Lindström", role: "Lokalansvarig", email: "anna.lindstrom@chalmers.se", phone: "031-772 10 01" },
+      { customerId: chalmers.id, name: "Karl Svensson", role: "Prefekt", email: "karl.svensson@chalmers.se", phone: "031-772 10 50" },
+      { customerId: ica.id, name: "Per Svensson", role: "Fastighetschef", email: "per.svensson@ica.se", phone: "08-561 500 10" },
+      { customerId: ica.id, name: "Lisa Ekström", role: "Inredningsansvarig", email: "lisa.ekstrom@ica.se", phone: "08-561 500 22" },
+    ],
+  });
+
   // --- Projects (individual creates to get IDs) ---
   const kulturhuset = await prisma.project.create({
     data: {
@@ -312,7 +327,7 @@ async function main() {
   });
 
   console.log(
-    "Seed complete: 3 users, 3 partners, 4 customers, 6 projects, 5 project-partner links, 15 time entries, 3 quotes with items, 7 delivery events"
+    "Seed complete: 3 users, 3 partners, 4 customers, 9 contacts, 6 projects, 5 project-partner links, 15 time entries, 3 quotes with items, 7 delivery events"
   );
 }
 

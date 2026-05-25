@@ -37,6 +37,7 @@ model Customer {
   onedriveFolderUrl String?         @map("onedrive_folder_url")
   responsibleUser   User?           @relation(fields: [responsibleUserId], references: [id])
   responsibleUserId String?         @map("responsible_user_id")
+  contacts          Contact[]
   projects          Project[]
   quotes            Quote[]
   deliveryEvents    DeliveryEvent[]
@@ -44,6 +45,20 @@ model Customer {
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
   @@map("customers")
+}
+
+model Contact {
+  id         String   @id @default(cuid())
+  name       String
+  role       String?
+  email      String?
+  phone      String?
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String   @map("customer_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("contacts")
 }
 
 model Project {

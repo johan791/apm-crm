@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/format";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
+import { ContactList } from "@/components/customers/contact-list";
 
 const statusLabels: Record<string, string> = {
   active: "Aktivt",
@@ -55,6 +56,7 @@ export default async function KundDetaljPage({
     where: { id },
     include: {
       responsibleUser: true,
+      contacts: { orderBy: { name: "asc" } },
       projects: { orderBy: { updatedAt: "desc" } },
       quotes: {
         orderBy: { createdAt: "desc" },
@@ -97,15 +99,9 @@ export default async function KundDetaljPage({
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Kontaktuppgifter</CardTitle>
+            <CardTitle className="text-base">Uppgifter</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {customer.contactPerson && (
-              <div className="flex items-center gap-2 text-sm">
-                <Building className="h-4 w-4 text-muted-foreground" />
-                {customer.contactPerson}
-              </div>
-            )}
             {customer.responsibleUser && (
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
@@ -195,6 +191,21 @@ export default async function KundDetaljPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Users className="h-4 w-4" />
+            Kontaktpersoner ({customer.contacts.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ContactList
+            customerId={customer.id}
+            contacts={customer.contacts}
+          />
+        </CardContent>
+      </Card>
 
       {customer.notes && (
         <Card>
