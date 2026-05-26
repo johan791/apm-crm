@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
+import { currentUserId } from "@/lib/current-user";
 
 const statusLabels: Record<string, string> = {
   active: "Aktivt",
@@ -33,9 +34,11 @@ const statusVariants: Record<
 export default async function ProjektPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; visa?: string }>;
 }) {
-  const { q, status } = await searchParams;
+  const { q, status, visa } = await searchParams;
+  const visaFilter = visa ?? "alla";
+  const userId = await currentUserId();
 
   const where: Record<string, unknown> = {};
   if (q) {
@@ -47,11 +50,18 @@ export default async function ProjektPage({
   if (status) {
     where.status = status;
   }
+  if (visaFilter === "mina") {
+    where.responsibleUserId = userId;
+  }
 
   const projects = await prisma.project.findMany({
     where,
     orderBy: { updatedAt: "desc" },
-    include: { customer: true, quotes: { select: { id: true, status: true } } },
+    include: {
+      customer: true,
+      responsibleUser: true,
+      quotes: { select: { id: true, status: true } },
+    },
   });
 
   return (
@@ -69,9 +79,29 @@ export default async function ProjektPage({
         </Button>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex gap-2">
+          {[
+            { value: "mina", label: "Mina" },
+            { value: "alla", label: "Alla" },
+          ].map((opt) => (
+            <Button
+              key={opt.value}
+              variant={visaFilter === opt.value ? "default" : "outline"}
+              size="sm"
+              render={
+                <Link
+                  href={`/projekt?visa=${opt.value}${status ? `&status=${status}` : ""}${q ? `&q=${q}` : ""}`}
+                />
+              }
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
         <form className="flex max-w-sm gap-2 flex-1">
           {status && <input type="hidden" name="status" value={status} />}
+          {visaFilter !== "alla" && <input type="hidden" name="visa" value={visaFilter} />}
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -89,7 +119,7 @@ export default async function ProjektPage({
           <Button
             variant={!status ? "default" : "outline"}
             size="sm"
-            render={<Link href="/projekt" />}
+            render={<Link href={`/projekt?visa=${visaFilter}`} />}
           >
             Alla
           </Button>
@@ -100,7 +130,7 @@ export default async function ProjektPage({
               size="sm"
               render={
                 <Link
-                  href={`/projekt?status=${value}${q ? `&q=${q}` : ""}`}
+                  href={`/projekt?visa=${visaFilter}&status=${value}${q ? `&q=${q}` : ""}`}
                 />
               }
             >
@@ -134,7 +164,8 @@ export default async function ProjektPage({
                 <TableHead>Projekt</TableHead>
                 <TableHead className="hidden sm:table-cell">Kund</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell text-right">
+                <TableHead className="hidden md:table-cell">Ansvarig</TableHead>
+                <TableHead className="hidden lg:table-cell text-right">
                   Timpris
                 </TableHead>
               </TableRow>
@@ -174,7 +205,10 @@ export default async function ProjektPage({
                         )}
                     </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-right">
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {project.responsibleUser?.name ?? "–"}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell text-right">
                     {project.hourlyRate
                       ? `${project.hourlyRate} kr`
                       : "–"}
