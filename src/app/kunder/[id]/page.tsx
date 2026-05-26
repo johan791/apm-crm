@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText, Users, Activity } from "lucide-react";
+import { ArrowLeft, Pencil, Mail, Phone, MapPin, Building, ExternalLink, FolderOpen, Link2, User, FileText, Users, Activity, MailIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,8 @@ import { DeleteCustomerButton } from "@/components/customers/delete-customer-but
 import { ContactList } from "@/components/customers/contact-list";
 import { ActivityList } from "@/components/activities/activity-list";
 import { QuickActivityForm } from "@/components/activities/quick-activity-form";
+import { EmailLogList } from "@/components/email-logs/email-log-list";
+import { QuickEmailForm } from "@/components/email-logs/quick-email-form";
 
 const statusLabels: Record<string, string> = {
   active: "Aktivt",
@@ -62,6 +64,10 @@ export default async function KundDetaljPage({
       activities: {
         orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
         include: { createdBy: true, assignedTo: true },
+      },
+      emailLogs: {
+        orderBy: { sentAt: "desc" },
+        include: { createdBy: true },
       },
       projects: { orderBy: { updatedAt: "desc" } },
       quotes: {
@@ -223,6 +229,19 @@ export default async function KundDetaljPage({
         <CardContent className="space-y-3">
           <ActivityList activities={customer.activities} />
           <QuickActivityForm customerId={customer.id} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MailIcon className="h-4 w-4" />
+            Mejl ({customer.emailLogs.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <EmailLogList emails={customer.emailLogs} />
+          <QuickEmailForm customerId={customer.id} />
         </CardContent>
       </Card>
 

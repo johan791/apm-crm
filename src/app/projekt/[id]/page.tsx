@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus, User, Users, Tag, Activity } from "lucide-react";
+import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus, User, Users, Tag, Activity, MailIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -10,6 +10,8 @@ import { StatusSelect } from "@/components/projects/status-select";
 import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 import { ActivityList } from "@/components/activities/activity-list";
 import { QuickActivityForm } from "@/components/activities/quick-activity-form";
+import { EmailLogList } from "@/components/email-logs/email-log-list";
+import { QuickEmailForm } from "@/components/email-logs/quick-email-form";
 import { formatDate as fmtDate, formatHours, formatCurrency } from "@/lib/format";
 
 function formatDate(date: Date | null) {
@@ -42,6 +44,10 @@ export default async function ProjektDetaljPage({
       activities: {
         orderBy: [{ status: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
         include: { createdBy: true, assignedTo: true },
+      },
+      emailLogs: {
+        orderBy: { sentAt: "desc" },
+        include: { createdBy: true },
       },
       timeEntries: { orderBy: { date: "desc" }, take: 5 },
     },
@@ -221,6 +227,19 @@ export default async function ProjektDetaljPage({
         <CardContent className="space-y-3">
           <ActivityList activities={project.activities} />
           <QuickActivityForm projectId={project.id} customerId={project.customerId} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MailIcon className="h-4 w-4" />
+            Mejl ({project.emailLogs.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <EmailLogList emails={project.emailLogs} />
+          <QuickEmailForm projectId={project.id} customerId={project.customerId} />
         </CardContent>
       </Card>
 

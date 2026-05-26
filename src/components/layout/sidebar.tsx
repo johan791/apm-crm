@@ -14,6 +14,7 @@ import {
   LogOut,
   Activity,
   Receipt,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -49,6 +50,7 @@ const navSections: NavSection[] = [
     items: [
       { href: "/kunder", label: "Kunder", icon: Users },
       { href: "/projekt", label: "Projekt", icon: FolderKanban },
+      { href: "/mejl", label: "Mejllogg", icon: Mail },
       { href: "/partners", label: "Partners", icon: Handshake },
     ],
   },
