@@ -50,7 +50,7 @@ export default async function AktiviteterPage({
     { value: "anteckning", label: "Anteckningar" },
     { value: "samtal", label: "Samtal" },
     { value: "mote", label: "Möten" },
-    { value: "mejl", label: "Mejl" },
+    { value: "mejl", label: "Mail" },
     { value: "uppgift", label: "Uppgifter" },
     { value: "uppfoljning", label: "Uppföljningar" },
   ];

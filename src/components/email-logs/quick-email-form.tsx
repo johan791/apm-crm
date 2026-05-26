@@ -24,7 +24,7 @@ export function QuickEmailForm({ customerId, projectId }: QuickEmailFormProps) {
         onClick={() => setOpen(true)}
       >
         <Plus className="mr-2 h-3.5 w-3.5" />
-        Logga mejl
+        Logga mail
       </Button>
     );
   }
@@ -74,7 +74,7 @@ export function QuickEmailForm({ customerId, projectId }: QuickEmailFormProps) {
           id="qe-body"
           name="body"
           rows={3}
-          placeholder="Klistra in eller sammanfatta mejlet..."
+          placeholder="Klistra in eller sammanfatta mailet..."
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         />
       </div>

@@ -50,7 +50,7 @@ const navSections: NavSection[] = [
     items: [
       { href: "/kunder", label: "Kunder", icon: Users },
       { href: "/projekt", label: "Projekt", icon: FolderKanban },
-      { href: "/mejl", label: "Mejllogg", icon: Mail },
+      { href: "/mejl", label: "Maillogg", icon: Mail },
       { href: "/partners", label: "Partners", icon: Handshake },
     ],
   },

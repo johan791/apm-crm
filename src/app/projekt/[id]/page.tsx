@@ -234,7 +234,7 @@ export default async function ProjektDetaljPage({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
             <MailIcon className="h-4 w-4" />
-            Mejl ({project.emailLogs.length})
+            Mail ({project.emailLogs.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">

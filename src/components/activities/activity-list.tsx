@@ -10,7 +10,7 @@ const typeConfig: Record<string, { label: string; icon: typeof Phone }> = {
   anteckning: { label: "Anteckning", icon: MessageSquare },
   samtal: { label: "Samtal", icon: Phone },
   mote: { label: "Möte", icon: Users },
-  mejl: { label: "Mejl", icon: Mail },
+  mejl: { label: "Mail", icon: Mail },
   uppgift: { label: "Uppgift", icon: ClipboardList },
   uppfoljning: { label: "Uppföljning", icon: Clock },
 };

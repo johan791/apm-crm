@@ -35,14 +35,14 @@ export default async function MejlPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1>Mejllogg</h1>
+          <h1>Maillogg</h1>
           <p className="text-muted-foreground">
-            {emails.length} {emails.length === 1 ? "mejl" : "mejl"} loggade
+            {emails.length} {emails.length === 1 ? "mail" : "mail"} loggade
           </p>
         </div>
         <Button render={<Link href="/mejl/ny" />}>
           <Plus className="mr-2 h-4 w-4" />
-          Logga mejl
+          Logga mail
         </Button>
       </div>
 
@@ -90,9 +90,9 @@ export default async function MejlPage({
         ))}
         {emails.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
-            <h3 className="text-lg font-semibold">Inga mejl loggade</h3>
+            <h3 className="text-lg font-semibold">Inga mail loggade</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {q ? "Inga mejl matchade sökningen." : "Börja logga mejl för att se dem här."}
+              {q ? "Inga mail matchade sökningen." : "Börja logga mail för att se dem här."}
             </p>
           </div>
         )}

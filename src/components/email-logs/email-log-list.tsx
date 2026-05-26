@@ -22,7 +22,7 @@ export function EmailLogList({ emails }: { emails: EmailLogItem[] }) {
   if (emails.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        Inga loggade mejl ännu.
+        Inga loggade mail ännu.
       </p>
     );
   }

@@ -29,14 +29,14 @@ export default async function NyMejlPage({
         render={<Link href="/mejl" />}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        Tillbaka till mejllogg
+        Tillbaka till maillogg
       </Button>
 
       <form action={createEmailLog}>
         <input type="hidden" name="returnTo" value="/mejl" />
         <Card>
           <CardHeader>
-            <CardTitle>Logga mejl</CardTitle>
+            <CardTitle>Logga mail</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
@@ -71,7 +71,7 @@ export default async function NyMejlPage({
                 id="body"
                 name="body"
                 rows={6}
-                placeholder="Klistra in eller sammanfatta mejlet..."
+                placeholder="Klistra in eller sammanfatta mailet..."
                 className="flex w-full rounded-md border border-input bg-background px-3 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
@@ -122,7 +122,7 @@ export default async function NyMejlPage({
             </div>
 
             <Button type="submit" className="w-full sm:w-auto" size="lg">
-              Spara mejl
+              Spara mail
             </Button>
           </CardContent>
         </Card>

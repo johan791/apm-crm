@@ -11,7 +11,7 @@ const types = [
   { value: "anteckning", label: "Anteckning" },
   { value: "samtal", label: "Samtal" },
   { value: "mote", label: "Möte" },
-  { value: "mejl", label: "Mejl" },
+  { value: "mejl", label: "Mail" },
   { value: "uppgift", label: "Uppgift" },
   { value: "uppfoljning", label: "Uppföljning" },
 ];
