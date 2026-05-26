@@ -8,11 +8,12 @@ import { currentUserId } from "@/lib/current-user";
 export async function createInvoiceBasis(formData: FormData) {
   const userId = await currentUserId();
   const projectId = formData.get("projectId") as string;
-  const periodFrom = new Date(formData.get("periodFrom") as string);
-  const periodTo = new Date(formData.get("periodTo") as string);
   const notes = (formData.get("notes") as string) || null;
 
-  periodTo.setHours(23, 59, 59, 999);
+  const fromStr = formData.get("periodFrom") as string;
+  const toStr = formData.get("periodTo") as string;
+  const periodFrom = new Date(fromStr + "T00:00:00.000Z");
+  const periodTo = new Date(toStr + "T23:59:59.999Z");
 
   const entries = await prisma.timeEntry.findMany({
     where: {
@@ -24,7 +25,7 @@ export async function createInvoiceBasis(formData: FormData) {
   });
 
   if (entries.length === 0) {
-    throw new Error("Inga ofakturerade tidsposter i vald period.");
+    redirect("/fakturaunderlag/nytt?fel=inga-poster");
   }
 
   const totalHours = entries.reduce((sum, e) => sum + Number(e.hours), 0);

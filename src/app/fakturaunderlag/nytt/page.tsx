@@ -7,7 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { createInvoiceBasis } from "@/lib/actions/invoice-basis";
 
-export default async function NyttFakturaunderlagPage() {
+export default async function NyttFakturaunderlagPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fel?: string }>;
+}) {
+  const params = await searchParams;
   const projects = await prisma.project.findMany({
     where: {
       timeEntries: { some: { invoiced: false } },
@@ -45,6 +50,11 @@ export default async function NyttFakturaunderlagPage() {
             <CardTitle>Nytt fakturaunderlag</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {params.fel === "inga-poster" && (
+              <div className="rounded-md border border-destructive/50 bg-destructive/5 p-3 text-sm text-destructive">
+                Inga ofakturerade tidsposter hittades i den valda perioden. Prova ett annat datumintervall.
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="projectId">Projekt *</Label>
               <select
