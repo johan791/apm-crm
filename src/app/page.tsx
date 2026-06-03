@@ -172,7 +172,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 flex-wrap">
         <Button render={<Link href="/kunder/ny" />}>
           <Plus className="mr-2 h-4 w-4" />
           Ny kund

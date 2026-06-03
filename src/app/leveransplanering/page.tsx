@@ -71,14 +71,14 @@ export default async function LeveransplaneringPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1>Leveransplanering</h1>
           <p className="text-muted-foreground">
             Planera leveranser, installationer och upphämtningar
           </p>
         </div>
-        <Button render={<Link href="/leveransplanering/ny" />}>
+        <Button render={<Link href="/leveransplanering/ny" />} className="self-start sm:self-auto">
           <Plus className="mr-2 h-4 w-4" />
           Ny händelse
         </Button>
@@ -120,7 +120,7 @@ export default async function LeveransplaneringPage({
                 <Link
                   key={event.id}
                   href={`/leveransplanering/${event.id}/redigera`}
-                  className="flex items-center gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+                  className="flex flex-wrap items-center gap-2 sm:gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
                 >
                   <span
                     className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border ${
@@ -137,7 +137,7 @@ export default async function LeveransplaneringPage({
                   <span className="text-sm text-muted-foreground">
                     {event.project.name}
                   </span>
-                  <span className="ml-auto text-sm text-muted-foreground">
+                  <span className="sm:ml-auto text-sm text-muted-foreground">
                     {event.customer.companyName}
                   </span>
                 </Link>

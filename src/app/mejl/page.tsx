@@ -33,14 +33,14 @@ export default async function MejlPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1>Maillogg</h1>
           <p className="text-muted-foreground">
             {emails.length} {emails.length === 1 ? "mail" : "mail"} loggade
           </p>
         </div>
-        <Button render={<Link href="/mejl/ny" />}>
+        <Button render={<Link href="/mejl/ny" />} className="self-start sm:self-auto">
           <Plus className="mr-2 h-4 w-4" />
           Logga mail
         </Button>

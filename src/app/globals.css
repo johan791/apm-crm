@@ -126,7 +126,12 @@
   }
   html {
     @apply font-sans;
-    font-size: 20px;
+    font-size: 16px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 20px;
+    }
   }
   h1 {
     @apply text-xl font-semibold tracking-tight;

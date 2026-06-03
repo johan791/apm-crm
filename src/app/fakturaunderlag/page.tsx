@@ -41,14 +41,14 @@ export default async function FakturaunderlagPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1>Fakturaunderlag</h1>
           <p className="text-muted-foreground">
             {uninvoicedCount} ofakturerade tidsposter ({formatHours(uninvoicedHours)})
           </p>
         </div>
-        <Button render={<Link href="/fakturaunderlag/nytt" />}>
+        <Button render={<Link href="/fakturaunderlag/nytt" />} className="self-start sm:self-auto">
           <Plus className="mr-2 h-4 w-4" />
           Nytt underlag
         </Button>

@@ -66,14 +66,14 @@ export default async function ProjektPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1>Projekt</h1>
           <p className="text-muted-foreground">
             {projects.length} projekt
           </p>
         </div>
-        <Button render={<Link href="/projekt/nytt" />}>
+        <Button render={<Link href="/projekt/nytt" />} className="self-start sm:self-auto">
           <Plus className="mr-2 h-4 w-4" />
           Nytt projekt
         </Button>
