@@ -9,6 +9,7 @@ export async function createCustomer(formData: FormData) {
     data: {
       companyName: formData.get("companyName") as string,
       orgNumber: (formData.get("orgNumber") as string) || null,
+      customerNumber: (formData.get("customerNumber") as string) || null,
       contactPerson: (formData.get("contactPerson") as string) || null,
       email: (formData.get("email") as string) || null,
       phone: (formData.get("phone") as string) || null,
@@ -32,6 +33,7 @@ export async function updateCustomer(id: string, formData: FormData) {
     data: {
       companyName: formData.get("companyName") as string,
       orgNumber: (formData.get("orgNumber") as string) || null,
+      customerNumber: (formData.get("customerNumber") as string) || null,
       contactPerson: (formData.get("contactPerson") as string) || null,
       email: (formData.get("email") as string) || null,
       phone: (formData.get("phone") as string) || null,

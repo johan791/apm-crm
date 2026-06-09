@@ -14,6 +14,7 @@ interface TimeEntryFormProps {
     description: string | null;
   };
   defaultProjectId?: string;
+  returnTo?: string;
 }
 
 function formatDateValue(date: Date | null | undefined) {
@@ -26,9 +27,11 @@ export function TimeEntryForm({
   projects,
   timeEntry,
   defaultProjectId,
+  returnTo,
 }: TimeEntryFormProps) {
   return (
     <form action={action}>
+      {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
       <Card>
         <CardHeader>
           <CardTitle>

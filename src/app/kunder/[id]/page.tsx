@@ -55,11 +55,10 @@ export default async function KundDetaljPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1>{customer.companyName}</h1>
-          {customer.orgNumber && (
-            <p className="text-sm text-muted-foreground">
-              Org.nr: {customer.orgNumber}
-            </p>
-          )}
+          <div className="flex flex-wrap gap-x-4 text-sm text-muted-foreground">
+            {customer.orgNumber && <span>Org.nr: {customer.orgNumber}</span>}
+            {customer.customerNumber && <span>Kundnr: {customer.customerNumber}</span>}
+          </div>
         </div>
         <div className="flex gap-2">
           <Button

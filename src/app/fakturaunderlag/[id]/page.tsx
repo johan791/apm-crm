@@ -28,9 +28,10 @@ export default async function FakturaunderlagDetaljPage({
   const basis = await prisma.invoiceBasis.findUnique({
     where: { id },
     include: {
-      project: { include: { customer: true } },
+      project: { include: { customer: true, responsibleUser: true } },
       createdBy: true,
       timeEntries: { orderBy: { date: "asc" } },
+      lines: { orderBy: { sortOrder: "asc" } },
     },
   });
 
@@ -39,6 +40,15 @@ export default async function FakturaunderlagDetaljPage({
   const hourlyRate = basis.project.hourlyRate
     ? Number(basis.project.hourlyRate)
     : null;
+
+  const timeAmount = hourlyRate
+    ? basis.timeEntries.reduce((sum, e) => sum + Number(e.hours) * hourlyRate, 0)
+    : 0;
+
+  const linesAmount = basis.lines.reduce(
+    (sum, l) => sum + Number(l.quantity) * Number(l.unitPrice),
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -84,6 +94,42 @@ export default async function FakturaunderlagDetaljPage({
         </div>
       </div>
 
+      {(basis.customerReference || basis.ourReference || basis.paymentTerms || basis.project.customer.customerNumber) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Fakturainformation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 text-sm sm:grid-cols-2 md:grid-cols-4">
+              {basis.project.customer.customerNumber && (
+                <div>
+                  <p className="text-muted-foreground">Kundnr</p>
+                  <p className="font-medium">{basis.project.customer.customerNumber}</p>
+                </div>
+              )}
+              {basis.customerReference && (
+                <div>
+                  <p className="text-muted-foreground">Er referens</p>
+                  <p className="font-medium">{basis.customerReference}</p>
+                </div>
+              )}
+              {basis.ourReference && (
+                <div>
+                  <p className="text-muted-foreground">Vår referens</p>
+                  <p className="font-medium">{basis.ourReference}</p>
+                </div>
+              )}
+              {basis.paymentTerms && (
+                <div>
+                  <p className="text-muted-foreground">Betalningsvillkor</p>
+                  <p className="font-medium">{basis.paymentTerms}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="py-4">
@@ -94,7 +140,7 @@ export default async function FakturaunderlagDetaljPage({
         {basis.totalAmount && (
           <Card>
             <CardContent className="py-4">
-              <p className="text-sm text-muted-foreground">Belopp</p>
+              <p className="text-sm text-muted-foreground">Totalbelopp</p>
               <p className="text-2xl font-bold">{formatCurrency(basis.totalAmount)}</p>
             </CardContent>
           </Card>
@@ -102,7 +148,7 @@ export default async function FakturaunderlagDetaljPage({
         <Card>
           <CardContent className="py-4">
             <p className="text-sm text-muted-foreground">Antal poster</p>
-            <p className="text-2xl font-bold">{basis.timeEntries.length}</p>
+            <p className="text-2xl font-bold">{basis.timeEntries.length + basis.lines.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -118,45 +164,98 @@ export default async function FakturaunderlagDetaljPage({
         </Card>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Tidsposter</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Datum</TableHead>
-                  <TableHead className="text-right">Timmar</TableHead>
-                  {hourlyRate && <TableHead className="text-right">Belopp</TableHead>}
-                  <TableHead>Beskrivning</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {basis.timeEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell className="whitespace-nowrap">
-                      {formatDate(entry.date)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatHours(entry.hours)}
-                    </TableCell>
-                    {hourlyRate && (
-                      <TableCell className="text-right">
-                        {formatCurrency(Number(entry.hours) * hourlyRate)}
-                      </TableCell>
-                    )}
-                    <TableCell className="text-muted-foreground">
-                      {entry.description ?? "–"}
-                    </TableCell>
+      {basis.timeEntries.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Tidsposter</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Datum</TableHead>
+                    <TableHead className="text-right">Timmar</TableHead>
+                    {hourlyRate && <TableHead className="text-right">Belopp</TableHead>}
+                    <TableHead>Beskrivning</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {basis.timeEntries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="whitespace-nowrap">
+                        {formatDate(entry.date)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatHours(entry.hours)}
+                      </TableCell>
+                      {hourlyRate && (
+                        <TableCell className="text-right">
+                          {formatCurrency(Number(entry.hours) * hourlyRate)}
+                        </TableCell>
+                      )}
+                      <TableCell className="text-muted-foreground">
+                        {entry.description ?? "–"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {hourlyRate && (
+              <p className="text-sm text-muted-foreground text-right mt-2">
+                Summa tidsposter: {formatCurrency(timeAmount)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {basis.lines.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Fria rader</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Beskrivning</TableHead>
+                    <TableHead>Enhet</TableHead>
+                    <TableHead className="text-right">Antal</TableHead>
+                    <TableHead className="text-right">À-pris</TableHead>
+                    <TableHead className="text-right">Summa</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {basis.lines.map((line) => {
+                    const lineTotal = Number(line.quantity) * Number(line.unitPrice);
+                    return (
+                      <TableRow key={line.id}>
+                        <TableCell>{line.description}</TableCell>
+                        <TableCell>{line.unit === "m2" ? "m²" : line.unit}</TableCell>
+                        <TableCell className="text-right">
+                          {Number(line.quantity)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(Number(line.unitPrice))}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(lineTotal)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-sm text-muted-foreground text-right mt-2">
+              Summa fria rader: {formatCurrency(linesAmount)}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <p className="text-xs text-muted-foreground print:hidden">
         Skapad av {basis.createdBy.name} den {formatDate(basis.createdAt)}

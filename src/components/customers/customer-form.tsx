@@ -42,6 +42,18 @@ export function CustomerForm({ action, customer, users }: CustomerFormProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
+              <Label htmlFor="customerNumber">Kundnummer</Label>
+              <Input
+                id="customerNumber"
+                name="customerNumber"
+                placeholder="T.ex. från Fortnox"
+                defaultValue={customer?.customerNumber ?? ""}
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
               <Label htmlFor="contactPerson">Kontaktperson</Label>
               <Input
                 id="contactPerson"

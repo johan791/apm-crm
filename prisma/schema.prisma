@@ -31,6 +31,7 @@ model Customer {
   id                String          @id @default(cuid())
   companyName       String          @map("company_name")
   orgNumber         String?         @map("org_number")
+  customerNumber    String?         @map("customer_number")
   contactPerson     String?         @map("contact_person")
   email             String?
   phone             String?
@@ -109,23 +110,40 @@ model TimeEntry {
 }
 
 model InvoiceBasis {
-  id          String      @id @default(cuid())
-  number      Int         @unique
-  project     Project     @relation(fields: [projectId], references: [id])
-  projectId   String      @map("project_id")
-  periodFrom  DateTime    @map("period_from")
-  periodTo    DateTime    @map("period_to")
-  totalHours  Decimal     @db.Decimal(7, 2) @map("total_hours")
-  totalAmount Decimal?    @db.Decimal(12, 2) @map("total_amount")
-  status      String      @default("skapad")
-  notes       String?
-  createdBy   User        @relation(fields: [createdById], references: [id])
-  createdById String      @map("created_by_id")
-  timeEntries TimeEntry[]
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  id                 String             @id @default(cuid())
+  number             Int                @unique
+  project            Project            @relation(fields: [projectId], references: [id])
+  projectId          String             @map("project_id")
+  periodFrom         DateTime           @map("period_from")
+  periodTo           DateTime           @map("period_to")
+  totalHours         Decimal            @db.Decimal(7, 2) @map("total_hours")
+  totalAmount        Decimal?           @db.Decimal(12, 2) @map("total_amount")
+  status             String             @default("skapad")
+  notes              String?
+  customerReference  String?            @map("customer_reference")
+  ourReference       String?            @map("our_reference")
+  paymentTerms       String?            @map("payment_terms")
+  createdBy          User               @relation(fields: [createdById], references: [id])
+  createdById        String             @map("created_by_id")
+  timeEntries        TimeEntry[]
+  lines              InvoiceBasisLine[]
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
 
   @@map("invoice_bases")
+}
+
+model InvoiceBasisLine {
+  id             String       @id @default(cuid())
+  invoiceBasis   InvoiceBasis @relation(fields: [invoiceBasisId], references: [id], onDelete: Cascade)
+  invoiceBasisId String       @map("invoice_basis_id")
+  description    String
+  unit           String       @default("st")
+  quantity       Decimal      @db.Decimal(10, 2)
+  unitPrice      Decimal      @map("unit_price") @db.Decimal(10, 2)
+  sortOrder      Int          @default(0) @map("sort_order")
+
+  @@map("invoice_basis_lines")
 }
 
 model Quote {

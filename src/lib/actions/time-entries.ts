@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export async function createTimeEntry(formData: FormData) {
   const projectId = formData.get("projectId") as string;
+  const returnTo = (formData.get("returnTo") as string) || null;
 
   await prisma.timeEntry.create({
     data: {
@@ -20,11 +21,12 @@ export async function createTimeEntry(formData: FormData) {
   revalidatePath(`/projekt/${projectId}/tid`);
   revalidatePath(`/projekt/${projectId}`);
   revalidatePath("/");
-  redirect(`/projekt/${projectId}/tid`);
+  redirect(returnTo || `/projekt/${projectId}/tid`);
 }
 
 export async function updateTimeEntry(id: string, formData: FormData) {
   const projectId = formData.get("projectId") as string;
+  const returnTo = (formData.get("returnTo") as string) || null;
 
   await prisma.timeEntry.update({
     where: { id },
@@ -40,15 +42,15 @@ export async function updateTimeEntry(id: string, formData: FormData) {
   revalidatePath(`/projekt/${projectId}/tid`);
   revalidatePath(`/projekt/${projectId}`);
   revalidatePath("/");
-  redirect(`/projekt/${projectId}/tid`);
+  redirect(returnTo || `/projekt/${projectId}/tid`);
 }
 
-export async function deleteTimeEntry(id: string, projectId: string) {
+export async function deleteTimeEntry(id: string, projectId: string, returnTo?: string) {
   await prisma.timeEntry.delete({ where: { id } });
 
   revalidatePath("/tidrapportering");
   revalidatePath(`/projekt/${projectId}/tid`);
   revalidatePath(`/projekt/${projectId}`);
   revalidatePath("/");
-  redirect(`/projekt/${projectId}/tid`);
+  redirect(returnTo || `/projekt/${projectId}/tid`);
 }

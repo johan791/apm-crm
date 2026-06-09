@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus, Search, Clock } from "lucide-react";
+import { Plus, Search, Clock, Calendar, TrendingUp, Printer, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatHours } from "@/lib/format";
+import { DeleteTimeEntryIconButton } from "@/components/time-entries/delete-time-entry-icon-button";
+import { PrintButton } from "@/components/invoice-basis/print-button";
 
 export default async function TidrapporteringPage({
   searchParams,
@@ -46,6 +48,12 @@ export default async function TidrapporteringPage({
     0
   );
 
+  const uniqueDays = new Set(
+    timeEntries.map((e) => e.date.toISOString().slice(0, 10))
+  ).size;
+
+  const avgPerDay = uniqueDays > 0 ? totalHours / uniqueDays : 0;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -56,25 +64,52 @@ export default async function TidrapporteringPage({
             {timeEntries.length === 1 ? "tidspost" : "tidsposter"}
           </p>
         </div>
-        <Button render={<Link href="/tidrapportering/ny" />} className="self-start sm:self-auto">
-          <Plus className="mr-2 h-4 w-4" />
-          Ny tidspost
-        </Button>
+        <div className="flex gap-2 self-start sm:self-auto">
+          <PrintButton label="Skriv ut" />
+          <Button render={<Link href="/tidrapportering/ny" />}>
+            <Plus className="mr-2 h-4 w-4" />
+            Registrera tid
+          </Button>
+        </div>
       </div>
 
-      <Card className="border-l-3 border-l-accent-amber">
-        <CardContent className="flex items-center gap-3 py-4">
-          <div className="rounded-md bg-accent-amber-subtle p-1.5">
-            <Clock className="h-4 w-4 text-accent-amber" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Totalt</p>
-            <p className="text-lg font-semibold">{formatHours(totalHours)}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="border-l-3 border-l-accent-amber">
+          <CardContent className="flex items-center gap-3 py-4">
+            <div className="rounded-md bg-accent-amber-subtle p-1.5">
+              <Clock className="h-4 w-4 text-accent-amber" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Totalt timmar</p>
+              <p className="text-xl font-semibold">{formatHours(totalHours)}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-l-3 border-l-accent-blue">
+          <CardContent className="flex items-center gap-3 py-4">
+            <div className="rounded-md bg-accent-blue-subtle p-1.5">
+              <Calendar className="h-4 w-4 text-accent-blue" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Antal dagar</p>
+              <p className="text-xl font-semibold">{uniqueDays}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-l-3 border-l-accent-teal">
+          <CardContent className="flex items-center gap-3 py-4">
+            <div className="rounded-md bg-accent-teal-subtle p-1.5">
+              <TrendingUp className="h-4 w-4 text-accent-teal" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Snitt per dag</p>
+              <p className="text-xl font-semibold">{formatHours(avgPerDay)}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-      <form className="flex max-w-sm gap-2">
+      <form className="flex max-w-sm gap-2 print:hidden">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -113,12 +148,15 @@ export default async function TidrapporteringPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Datum</TableHead>
-                <TableHead>Projekt</TableHead>
-                <TableHead className="hidden sm:table-cell">Kund</TableHead>
+                <TableHead>Kund</TableHead>
+                <TableHead className="hidden sm:table-cell">Projekt</TableHead>
                 <TableHead className="text-right">Timmar</TableHead>
                 <TableHead className="hidden sm:table-cell">Status</TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Beskrivning
+                  Anteckningar
+                </TableHead>
+                <TableHead className="text-right print:hidden">
+                  <span className="sr-only">Åtgärder</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -130,18 +168,18 @@ export default async function TidrapporteringPage({
                   </TableCell>
                   <TableCell>
                     <Link
-                      href={`/projekt/${entry.project.id}/tid`}
-                      className="font-medium hover:underline"
-                    >
-                      {entry.project.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-muted-foreground">
-                    <Link
                       href={`/kunder/${entry.project.customer.id}`}
                       className="hover:underline"
                     >
                       {entry.project.customer.companyName}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <Link
+                      href={`/projekt/${entry.project.id}`}
+                      className="font-medium hover:underline"
+                    >
+                      {entry.project.name}
                     </Link>
                   </TableCell>
                   <TableCell className="text-right">
@@ -154,6 +192,23 @@ export default async function TidrapporteringPage({
                   </TableCell>
                   <TableCell className="hidden md:table-cell max-w-xs truncate text-muted-foreground">
                     {entry.description ?? "–"}
+                  </TableCell>
+                  <TableCell className="text-right print:hidden">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        render={<Link href={`/tidrapportering/${entry.id}/redigera`} />}
+                      >
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      </Button>
+                      <DeleteTimeEntryIconButton
+                        id={entry.id}
+                        projectId={entry.projectId}
+                        returnTo="/tidrapportering"
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

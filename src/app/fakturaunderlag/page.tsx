@@ -13,7 +13,7 @@ export default async function FakturaunderlagPage() {
     include: {
       project: { include: { customer: true } },
       createdBy: true,
-      _count: { select: { timeEntries: true } },
+      _count: { select: { timeEntries: true, lines: true } },
     },
   });
 
@@ -70,7 +70,7 @@ export default async function FakturaunderlagPage() {
                   {basis.project.customer.companyName} — {basis.project.name}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {formatDate(basis.periodFrom)} – {formatDate(basis.periodTo)} · {basis._count.timeEntries} poster
+                  {formatDate(basis.periodFrom)} – {formatDate(basis.periodTo)} · {basis._count.timeEntries + basis._count.lines} poster
                 </p>
               </div>
               <div className="text-right">
