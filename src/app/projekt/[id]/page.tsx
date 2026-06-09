@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus, User, Users, Tag, Activity, MailIcon } from "lucide-react";
+import { ArrowLeft, Pencil, Calendar, Clock, Building, Plus, User, Users, Tag, Activity, MailIcon, FolderOpen, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -12,6 +12,7 @@ import { ActivityList } from "@/components/activities/activity-list";
 import { QuickActivityForm } from "@/components/activities/quick-activity-form";
 import { EmailLogList } from "@/components/email-logs/email-log-list";
 import { QuickEmailForm } from "@/components/email-logs/quick-email-form";
+import { ProjectFileList } from "@/components/projects/files/project-file-list";
 import { formatDate as fmtDate, formatHours, formatCurrency } from "@/lib/format";
 
 function formatDate(date: Date | null) {
@@ -49,6 +50,7 @@ export default async function ProjektDetaljPage({
         orderBy: { sentAt: "desc" },
         include: { createdBy: true },
       },
+      files: { orderBy: { createdAt: "desc" } },
       timeEntries: { orderBy: { date: "desc" }, take: 5 },
     },
   });
@@ -216,6 +218,38 @@ export default async function ProjektDetaljPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FolderOpen className="h-4 w-4 text-accent-amber" />
+            Dokument ({project.files.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {project.onedriveFolderUrl && (
+            <div className="flex items-center gap-2 rounded-md border border-accent-blue/30 bg-accent-blue-subtle/30 p-3">
+              <FolderOpen className="h-4 w-4 text-accent-blue shrink-0" />
+              <span className="text-sm flex-1">Projektmapp i OneDrive</span>
+              <Button
+                size="sm"
+                variant="outline"
+                render={
+                  <a
+                    href={project.onedriveFolderUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
+              >
+                <ExternalLink className="mr-1 h-3.5 w-3.5" />
+                Öppna
+              </Button>
+            </div>
+          )}
+          <ProjectFileList projectId={project.id} files={project.files} />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

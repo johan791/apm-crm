@@ -76,6 +76,7 @@ model Project {
   hourlyRate        Decimal?         @map("hourly_rate") @db.Decimal(10, 2)
   startDate         DateTime?        @map("start_date")
   endDate           DateTime?        @map("end_date")
+  onedriveFolderUrl String?          @map("onedrive_folder_url")
   customer          Customer         @relation(fields: [customerId], references: [id])
   customerId        String           @map("customer_id")
   responsibleUser   User?            @relation(fields: [responsibleUserId], references: [id])
@@ -87,10 +88,23 @@ model Project {
   emailLogs         EmailLog[]
   invoiceBases      InvoiceBasis[]
   deliveryEvents    DeliveryEvent[]
+  files             ProjectFile[]
   createdAt         DateTime         @default(now()) @map("created_at")
   updatedAt         DateTime         @updatedAt @map("updated_at")
 
   @@map("projects")
+}
+
+model ProjectFile {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  category    String   @default("ovrigt")
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String   @map("project_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("project_files")
 }
 
 model TimeEntry {

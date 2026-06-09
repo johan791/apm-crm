@@ -150,6 +150,20 @@ export function ProjectForm({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="onedriveFolderUrl">OneDrive-mapp</Label>
+            <Input
+              id="onedriveFolderUrl"
+              name="onedriveFolderUrl"
+              type="url"
+              placeholder="https://onedrive.live.com/..."
+              defaultValue={project?.onedriveFolderUrl ?? ""}
+            />
+            <p className="text-xs text-muted-foreground">
+              Länk till projektmappen i OneDrive för ritningar, moodboards och dokument.
+            </p>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button type="submit">
               {project ? "Spara ändringar" : "Skapa projekt"}

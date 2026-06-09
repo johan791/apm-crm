@@ -19,6 +19,7 @@ export async function createProject(formData: FormData) {
       hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
+      onedriveFolderUrl: (formData.get("onedriveFolderUrl") as string) || null,
     },
   });
 
@@ -43,6 +44,7 @@ export async function updateProject(id: string, formData: FormData) {
       hourlyRate: hourlyRate ? parseFloat(hourlyRate) : null,
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
+      onedriveFolderUrl: (formData.get("onedriveFolderUrl") as string) || null,
     },
   });
 
