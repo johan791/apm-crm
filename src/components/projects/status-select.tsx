@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { updateProjectStatus } from "@/lib/actions/projects";
+import { projectStatusLabels, projectStatusColors } from "@/lib/status-colors";
 
 const statuses = [
   { value: "active", label: "Aktivt" },
@@ -15,13 +16,6 @@ const statuses = [
   { value: "completed", label: "Avslutat" },
   { value: "cancelled", label: "Avbrutet" },
 ];
-
-const statusVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  active: "default",
-  completed: "secondary",
-  paused: "outline",
-  cancelled: "destructive",
-};
 
 export function StatusSelect({
   projectId,
@@ -37,8 +31,7 @@ export function StatusSelect({
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Badge
-          variant={statusVariants[currentStatus] ?? "outline"}
-          className="cursor-pointer"
+          className={`cursor-pointer ${projectStatusColors[currentStatus] ?? ""}`}
         >
           {currentLabel}
         </Badge>

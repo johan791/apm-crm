@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { prisma } from "@/lib/prisma";
 import { DeletePartnerButton } from "@/components/partners/delete-partner-button";
+import { projectStatusLabels, projectStatusColors } from "@/lib/status-colors";
 
 const categoryLabels: Record<string, string> = {
   logistics: "Logistik",
@@ -22,23 +23,6 @@ const categoryLabels: Record<string, string> = {
   refurbishment: "Renovering",
   architect: "Arkitekt",
   other: "Övrigt",
-};
-
-const projectStatusLabels: Record<string, string> = {
-  active: "Aktivt",
-  completed: "Avslutat",
-  paused: "Pausat",
-  cancelled: "Avbrutet",
-};
-
-const projectStatusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  active: "default",
-  completed: "secondary",
-  paused: "outline",
-  cancelled: "destructive",
 };
 
 export default async function PartnerDetaljPage({
@@ -165,11 +149,7 @@ export default async function PartnerDetaljPage({
                     </span>
                   )}
                 </div>
-                <Badge
-                  variant={
-                    projectStatusVariants[pp.project.status] ?? "outline"
-                  }
-                >
+                <Badge className={projectStatusColors[pp.project.status] ?? ""}>
                   {projectStatusLabels[pp.project.status] ?? pp.project.status}
                 </Badge>
               </Link>

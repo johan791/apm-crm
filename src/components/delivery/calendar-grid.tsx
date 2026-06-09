@@ -4,9 +4,9 @@ import Link from "next/link";
 import { getWeekNumber, swedishDaysShort } from "@/lib/format";
 
 const eventTypeColors: Record<string, string> = {
-  delivery: "bg-blue-100 text-blue-800 border-blue-200",
-  installation: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  pickup: "bg-amber-100 text-amber-800 border-amber-200",
+  delivery: "bg-accent-blue-subtle text-accent-blue",
+  installation: "bg-accent-green-subtle text-accent-green",
+  pickup: "bg-accent-amber-subtle text-accent-amber",
 };
 
 interface CalendarEvent {
@@ -100,33 +100,36 @@ export function CalendarGrid({ events, year, month }: CalendarGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-8 gap-px rounded-lg border bg-border overflow-hidden">
+    <div className="rounded-lg border border-border/60 overflow-hidden shadow-sm">
       {/* Header row */}
-      <div className="bg-muted p-2 text-center text-xs font-medium text-muted-foreground">
-        V.
-      </div>
-      {swedishDaysShort.map((day, i) => (
-        <div
-          key={day}
-          className={`p-2 text-center text-xs font-medium ${
-            i >= 5
-              ? "bg-muted/70 text-muted-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {day}
+      <div className="grid grid-cols-8 bg-muted/60 border-b border-border/60">
+        <div className="p-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+          V.
         </div>
-      ))}
+        {swedishDaysShort.map((day, i) => (
+          <div
+            key={day}
+            className={`p-2 text-center text-[0.65rem] font-semibold uppercase tracking-wider ${
+              i >= 5 ? "text-muted-foreground/60" : "text-muted-foreground"
+            }`}
+          >
+            {day}
+          </div>
+        ))}
+      </div>
 
       {/* Calendar rows */}
       {weeks.map((week, wi) => {
-        // Use the Monday of this week (first cell) for week number
         const weekNum = getWeekNumber(week[0].date);
+        const isLastWeek = wi === weeks.length - 1;
 
         return (
-          <div key={wi} className="contents">
+          <div
+            key={wi}
+            className={`grid grid-cols-8 ${!isLastWeek ? "border-b border-border/40" : ""}`}
+          >
             {/* Week number */}
-            <div className="flex items-start justify-center bg-muted/50 p-1 pt-2 text-xs font-medium text-muted-foreground">
+            <div className="flex items-start justify-center border-r border-border/40 bg-muted/30 p-1 pt-2.5 text-[0.65rem] font-medium text-muted-foreground">
               {weekNum}
             </div>
 
@@ -139,30 +142,36 @@ export function CalendarGrid({ events, year, month }: CalendarGridProps) {
               return (
                 <div
                   key={cell.dateStr}
-                  className={`min-h-[80px] md:min-h-[100px] p-1 ${
-                    isWeekend ? "bg-muted/30" : "bg-card"
-                  } ${!cell.isCurrentMonth ? "opacity-40" : ""} ${
-                    isToday ? "ring-2 ring-primary ring-inset" : ""
-                  }`}
+                  className={`min-h-[80px] md:min-h-[100px] p-1.5 transition-colors ${
+                    di < 6 ? "border-r border-border/40" : ""
+                  } ${isWeekend ? "bg-muted/20" : "bg-card"} ${
+                    !cell.isCurrentMonth ? "opacity-35" : ""
+                  } ${isToday ? "bg-primary/[0.04]" : ""}`}
                 >
-                  <div
-                    className={`text-xs font-medium mb-0.5 ${
-                      isToday
-                        ? "text-primary font-bold"
-                        : cell.isCurrentMonth
-                          ? "text-foreground"
-                          : "text-muted-foreground"
-                    }`}
-                  >
-                    {cell.day}
+                  <div className="flex items-center mb-1">
+                    {isToday ? (
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[0.7rem] font-bold text-primary-foreground">
+                        {cell.day}
+                      </span>
+                    ) : (
+                      <span
+                        className={`text-xs font-medium pl-0.5 ${
+                          cell.isCurrentMonth
+                            ? "text-foreground"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {cell.day}
+                      </span>
+                    )}
                   </div>
                   <div className="space-y-0.5">
                     {dayEvents.map((event) => (
                       <Link
                         key={event.id}
                         href={`/leveransplanering/${event.id}/redigera`}
-                        className={`text-[0.65rem] leading-tight rounded px-1 py-0.5 border truncate block hover:opacity-80 transition-opacity ${
-                          eventTypeColors[event.type] ?? "bg-gray-100 text-gray-800 border-gray-200"
+                        className={`text-[0.65rem] leading-tight rounded-md px-1.5 py-0.5 font-medium truncate block hover:opacity-75 transition-opacity ${
+                          eventTypeColors[event.type] ?? "bg-muted text-muted-foreground"
                         }`}
                       >
                         {event.project.name}

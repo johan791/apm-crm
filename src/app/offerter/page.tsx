@@ -14,25 +14,7 @@ import {
 } from "@/components/ui/table";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/format";
-
-const quoteStatusLabels: Record<string, string> = {
-  draft: "Utkast",
-  sent: "Skickad",
-  accepted: "Accepterad",
-  rejected: "Avvisad",
-  order: "Order",
-};
-
-const quoteStatusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  draft: "outline",
-  sent: "secondary",
-  accepted: "default",
-  rejected: "destructive",
-  order: "default",
-};
+import { quoteStatusLabels, quoteStatusColors } from "@/lib/status-colors";
 
 export default async function OfferterPage({
   searchParams,
@@ -94,17 +76,17 @@ export default async function OfferterPage({
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[
-          { key: "draft", label: "Utkast", color: "text-muted-foreground" },
-          { key: "sent", label: "Skickade", color: "text-blue-600" },
-          { key: "accepted", label: "Accepterade", color: "text-green-600" },
-          { key: "rejected", label: "Avvisade", color: "text-red-500" },
-          { key: "order", label: "Order", color: "text-primary" },
+          { key: "draft", label: "Utkast", border: "border-l-muted-foreground", text: "text-muted-foreground" },
+          { key: "sent", label: "Skickade", border: "border-l-accent-blue", text: "text-accent-blue" },
+          { key: "accepted", label: "Accepterade", border: "border-l-accent-green", text: "text-accent-green" },
+          { key: "rejected", label: "Avvisade", border: "border-l-accent-rose", text: "text-accent-rose" },
+          { key: "order", label: "Order", border: "border-l-primary", text: "text-primary" },
         ].map((stage) => (
           <Link key={stage.key} href={`/offerter?status=${stage.key}`}>
-            <Card className="transition-colors hover:bg-accent">
+            <Card className={`border-l-3 ${stage.border} transition-colors hover:bg-accent/30`}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">{stage.label}</p>
-                <p className={`text-2xl font-bold ${stage.color}`}>
+                <p className={`text-2xl font-bold ${stage.text}`}>
                   {pipeline[stage.key as keyof typeof pipeline]}
                 </p>
               </CardContent>
@@ -224,9 +206,7 @@ export default async function OfferterPage({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={quoteStatusVariants[quote.status] ?? "outline"}
-                      >
+                      <Badge className={quoteStatusColors[quote.status] ?? ""}>
                         {quoteStatusLabels[quote.status] ?? quote.status}
                       </Badge>
                     </TableCell>

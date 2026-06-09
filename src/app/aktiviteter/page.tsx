@@ -55,6 +55,15 @@ export default async function AktiviteterPage({
     { value: "uppfoljning", label: "Uppföljningar" },
   ];
 
+  function filterUrl(overrides: { visa?: string; status?: string; typ?: string }) {
+    const v = overrides.visa ?? visaFilter;
+    const s = overrides.status ?? statusFilter;
+    const t = overrides.typ ?? typFilter;
+    let url = `/aktiviteter?visa=${v}&status=${s}`;
+    if (t) url += `&typ=${t}`;
+    return url;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -71,83 +80,73 @@ export default async function AktiviteterPage({
         </Button>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {[
-          { value: "mina", label: "Mina" },
-          { value: "alla", label: "Alla" },
-        ].map((opt) => (
-          <Button
-            key={opt.value}
-            variant={visaFilter === opt.value ? "default" : "outline"}
-            size="sm"
-            render={
-              <Link
-                href={`/aktiviteter?visa=${opt.value}&status=${statusFilter}${typFilter ? `&typ=${typFilter}` : ""}`}
-              />
-            }
-          >
-            {opt.label}
-          </Button>
-        ))}
-        <span className="mx-2 border-l" />
-        {statusOptions.map((opt) => (
-          <Button
-            key={opt.value}
-            variant={statusFilter === opt.value ? "default" : "outline"}
-            size="sm"
-            render={
-              <Link
-                href={`/aktiviteter?visa=${visaFilter}&status=${opt.value}${typFilter ? `&typ=${typFilter}` : ""}`}
-              />
-            }
-          >
-            {opt.label}
-          </Button>
-        ))}
-        <span className="mx-2 border-l" />
-        {typeOptions.map((opt) => (
-          <Button
-            key={opt.value}
-            variant={
-              (typFilter ?? "") === opt.value ? "default" : "outline"
-            }
-            size="sm"
-            render={
-              <Link
-                href={`/aktiviteter?visa=${visaFilter}&status=${statusFilter}${opt.value ? `&typ=${opt.value}` : ""}`}
-              />
-            }
-          >
-            {opt.label}
-          </Button>
-        ))}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-6">
+        <div>
+          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Visa</span>
+          <div className="flex gap-1">
+            {[
+              { value: "mina", label: "Mina" },
+              { value: "alla", label: "Alla" },
+            ].map((opt) => (
+              <Button
+                key={opt.value}
+                variant={visaFilter === opt.value ? "default" : "outline"}
+                size="sm"
+                render={<Link href={filterUrl({ visa: opt.value })} />}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Status</span>
+          <div className="flex gap-1">
+            {statusOptions.map((opt) => (
+              <Button
+                key={opt.value}
+                variant={statusFilter === opt.value ? "default" : "outline"}
+                size="sm"
+                render={<Link href={filterUrl({ status: opt.value })} />}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Typ</span>
+          <div className="flex gap-1 flex-wrap">
+            {typeOptions.map((opt) => (
+              <Button
+                key={opt.value}
+                variant={(typFilter ?? "") === opt.value ? "default" : "outline"}
+                size="sm"
+                render={<Link href={filterUrl({ typ: opt.value })} />}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2">
         {activities.map((activity) => (
-          <div key={activity.id} className="space-y-1">
-            {(activity.customer || activity.project) && (
-              <div className="flex gap-2 text-xs text-muted-foreground px-1">
-                {activity.customer && (
-                  <Link
-                    href={`/kunder/${activity.customer.id}`}
-                    className="hover:underline"
-                  >
-                    {activity.customer.companyName}
-                  </Link>
-                )}
-                {activity.customer && activity.project && <span>/</span>}
-                {activity.project && (
-                  <Link
-                    href={`/projekt/${activity.project.id}`}
-                    className="hover:underline"
-                  >
-                    {activity.project.name}
-                  </Link>
-                )}
-              </div>
-            )}
-            <ActivityList activities={[activity]} />
+          <div key={activity.id} className="group/card">
+            <div className="space-y-0">
+              <ActivityList
+                activities={[activity]}
+                context={
+                  activity.customer || activity.project
+                    ? {
+                        customer: activity.customer,
+                        project: activity.project,
+                      }
+                    : undefined
+                }
+              />
+            </div>
           </div>
         ))}
         {activities.length === 0 && (

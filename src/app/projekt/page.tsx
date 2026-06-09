@@ -14,22 +14,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { currentUserId } from "@/lib/current-user";
 
-const statusLabels: Record<string, string> = {
-  active: "Aktivt",
-  completed: "Avslutat",
-  paused: "Pausat",
-  cancelled: "Avbrutet",
-};
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  active: "default",
-  completed: "secondary",
-  paused: "outline",
-  cancelled: "destructive",
-};
+import { projectStatusLabels, projectStatusColors } from "@/lib/status-colors";
 
 export default async function ProjektPage({
   searchParams,
@@ -123,7 +108,7 @@ export default async function ProjektPage({
           >
             Alla
           </Button>
-          {Object.entries(statusLabels).map(([value, label]) => (
+          {Object.entries(projectStatusLabels).map(([value, label]) => (
             <Button
               key={value}
               variant={status === value ? "default" : "outline"}
@@ -192,9 +177,9 @@ export default async function ProjektPage({
                   <TableCell>
                     <div className="flex items-center gap-1.5">
                       <Badge
-                        variant={statusVariants[project.status] ?? "outline"}
+                        className={projectStatusColors[project.status] ?? ""}
                       >
-                        {statusLabels[project.status] ?? project.status}
+                        {projectStatusLabels[project.status] ?? project.status}
                       </Badge>
                       {project.quotes.length > 0 &&
                         !project.quotes.some((q) => q.status === "accepted") && (

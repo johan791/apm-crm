@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { updateQuoteStatus, convertToOrder } from "@/lib/actions/quotes";
+import { quoteStatusLabels, quoteStatusColors } from "@/lib/status-colors";
 
 const statuses = [
   { value: "draft", label: "Utkast" },
@@ -16,14 +17,6 @@ const statuses = [
   { value: "rejected", label: "Avvisad" },
 ];
 
-const statusVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "outline",
-  sent: "secondary",
-  accepted: "default",
-  rejected: "destructive",
-  order: "default",
-};
-
 export function QuoteStatusSelect({
   quoteId,
   currentStatus,
@@ -31,19 +24,11 @@ export function QuoteStatusSelect({
   quoteId: string;
   currentStatus: string;
 }) {
-  const statusLabels: Record<string, string> = {
-    draft: "Utkast",
-    sent: "Skickad",
-    accepted: "Accepterad",
-    rejected: "Avvisad",
-    order: "Order",
-  };
-
-  const currentLabel = statusLabels[currentStatus] ?? currentStatus;
+  const currentLabel = quoteStatusLabels[currentStatus] ?? currentStatus;
 
   if (currentStatus === "order") {
     return (
-      <Badge variant={statusVariants[currentStatus] ?? "outline"}>
+      <Badge className={quoteStatusColors[currentStatus] ?? ""}>
         {currentLabel}
       </Badge>
     );
@@ -53,8 +38,7 @@ export function QuoteStatusSelect({
     <DropdownMenu>
       <DropdownMenuTrigger>
         <Badge
-          variant={statusVariants[currentStatus] ?? "outline"}
-          className="cursor-pointer"
+          className={`cursor-pointer ${quoteStatusColors[currentStatus] ?? ""}`}
         >
           {currentLabel}
         </Badge>

@@ -62,9 +62,11 @@ export default async function TidrapporteringPage({
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-l-3 border-l-accent-amber">
         <CardContent className="flex items-center gap-3 py-4">
-          <Clock className="h-5 w-5 text-muted-foreground" />
+          <div className="rounded-md bg-accent-amber-subtle p-1.5">
+            <Clock className="h-4 w-4 text-accent-amber" />
+          </div>
           <div>
             <p className="text-sm text-muted-foreground">Totalt</p>
             <p className="text-lg font-semibold">{formatHours(totalHours)}</p>
@@ -147,7 +149,7 @@ export default async function TidrapporteringPage({
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {entry.invoiced && (
-                      <Badge variant="secondary" className="text-xs">Fakturerad</Badge>
+                      <Badge className="bg-status-active-bg text-status-active border-transparent text-xs">Fakturerad</Badge>
                     )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell max-w-xs truncate text-muted-foreground">

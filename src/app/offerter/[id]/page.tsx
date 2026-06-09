@@ -264,7 +264,7 @@ export default async function OffertDetaljPage({
 
       {/* Internal margin card */}
       {quote.items.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/30">
+        <Card className="border-accent-amber bg-accent-amber-subtle/50">
           <CardHeader>
             <CardTitle className="text-base">Intern marginalkalkyl</CardTitle>
           </CardHeader>

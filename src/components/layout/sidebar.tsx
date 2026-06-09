@@ -82,7 +82,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
       {navSections.map((section, sIdx) => (
         <div key={sIdx}>
           {section.label && (
-            <p className="px-3 mb-1 mt-5 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="px-3 mb-1 mt-5 text-[0.65rem] font-semibold uppercase tracking-widest text-primary/70">
               {section.label}
             </p>
           )}

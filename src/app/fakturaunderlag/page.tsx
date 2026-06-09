@@ -5,20 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatHours, formatCurrency } from "@/lib/format";
 
-const statusLabels: Record<string, string> = {
-  skapad: "Skapad",
-  skickad: "Skickad",
-  betald: "Betald",
-};
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  skapad: "outline",
-  skickad: "secondary",
-  betald: "default",
-};
+import { invoiceStatusLabels, invoiceStatusColors } from "@/lib/status-colors";
 
 export default async function FakturaunderlagPage() {
   const bases = await prisma.invoiceBasis.findMany({
@@ -75,8 +62,8 @@ export default async function FakturaunderlagPage() {
                   <span className="font-medium">
                     Underlag #{basis.number}
                   </span>
-                  <Badge variant={statusVariants[basis.status] ?? "outline"}>
-                    {statusLabels[basis.status] ?? basis.status}
+                  <Badge className={invoiceStatusColors[basis.status] ?? ""}>
+                    {invoiceStatusLabels[basis.status] ?? basis.status}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">

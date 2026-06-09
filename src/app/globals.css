@@ -7,9 +7,27 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --color-accent-green: var(--accent-green);
+  --color-accent-green-subtle: var(--accent-green-subtle);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-amber-subtle: var(--accent-amber-subtle);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-subtle: var(--accent-blue-subtle);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-teal-subtle: var(--accent-teal-subtle);
+  --color-accent-rose: var(--accent-rose);
+  --color-accent-rose-subtle: var(--accent-rose-subtle);
+  --color-status-active: var(--status-active);
+  --color-status-active-bg: var(--status-active-bg);
+  --color-status-completed: var(--status-completed);
+  --color-status-completed-bg: var(--status-completed-bg);
+  --color-status-paused: var(--status-paused);
+  --color-status-paused-bg: var(--status-paused-bg);
+  --color-status-cancelled: var(--status-cancelled);
+  --color-status-cancelled-bg: var(--status-cancelled-bg);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -72,7 +90,25 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --accent-green: oklch(0.55 0.16 155);
+  --accent-green-subtle: oklch(0.95 0.04 155);
+  --accent-amber: oklch(0.75 0.15 75);
+  --accent-amber-subtle: oklch(0.96 0.04 85);
+  --accent-blue: oklch(0.55 0.12 250);
+  --accent-blue-subtle: oklch(0.95 0.03 250);
+  --accent-teal: oklch(0.60 0.12 190);
+  --accent-teal-subtle: oklch(0.95 0.03 190);
+  --accent-rose: oklch(0.60 0.15 15);
+  --accent-rose-subtle: oklch(0.96 0.03 15);
+  --status-active: oklch(0.55 0.16 155);
+  --status-active-bg: oklch(0.93 0.05 155);
+  --status-completed: oklch(0.55 0.01 250);
+  --status-completed-bg: oklch(0.95 0.01 250);
+  --status-paused: oklch(0.70 0.14 75);
+  --status-paused-bg: oklch(0.95 0.04 85);
+  --status-cancelled: oklch(0.60 0.20 25);
+  --status-cancelled-bg: oklch(0.95 0.03 25);
+  --radius: 0.5rem;
   --sidebar: oklch(0.975 0.008 85);
   --sidebar-foreground: oklch(0.17 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -126,21 +162,15 @@
   }
   html {
     @apply font-sans;
-    font-size: 16px;
-  }
-  @media (min-width: 768px) {
-    html {
-      font-size: 20px;
-    }
   }
   h1 {
-    @apply text-xl font-semibold tracking-tight;
+    @apply text-lg font-semibold tracking-tight;
   }
   h2 {
-    @apply text-base font-medium;
+    @apply text-sm font-semibold;
   }
   [data-slot="card"] {
-    @apply shadow-sm border-transparent;
+    @apply shadow-sm border-transparent ring-0;
   }
   [data-slot="table-body"] [data-slot="table-row"] {
     @apply hover:bg-accent/50;

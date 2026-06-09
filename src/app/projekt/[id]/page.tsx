@@ -220,7 +220,7 @@ export default async function ProjektDetaljPage({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Activity className="h-4 w-4" />
+            <Activity className="h-4 w-4 text-accent-green" />
             Aktiviteter ({project.activities.length})
           </CardTitle>
         </CardHeader>
@@ -233,7 +233,7 @@ export default async function ProjektDetaljPage({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <MailIcon className="h-4 w-4" />
+            <MailIcon className="h-4 w-4 text-accent-blue" />
             Mail ({project.emailLogs.length})
           </CardTitle>
         </CardHeader>
@@ -247,7 +247,7 @@ export default async function ProjektDetaljPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4" />
+              <Users className="h-4 w-4 text-accent-teal" />
               Partners ({project.partners.length})
             </CardTitle>
           </CardHeader>

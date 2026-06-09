@@ -16,23 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { currentUserId } from "@/lib/current-user";
 import { formatDate } from "@/lib/format";
-
-const statusLabels: Record<string, string> = {
-  active: "Aktivt",
-  completed: "Avslutat",
-  paused: "Pausat",
-  cancelled: "Avbrutet",
-};
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  active: "default",
-  completed: "secondary",
-  paused: "outline",
-  cancelled: "destructive",
-};
+import { projectStatusLabels, projectStatusColors } from "@/lib/status-colors";
 
 export default async function DashboardPage() {
   const userId = await currentUserId();
@@ -107,17 +91,19 @@ export default async function DashboardPage() {
   const todayStr = formatDate(now);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1>Hej! Här är din översikt</h1>
-        <p className="text-muted-foreground">{todayStr}</p>
+        <h1 className="text-primary">Hej! Här är din översikt</h1>
+        <p className="text-sm font-medium text-muted-foreground">{todayStr}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="transition-colors hover:bg-accent/30">
+        <Card className="border-l-3 border-l-accent-green transition-colors hover:bg-accent-green-subtle/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Aktiva projekt</CardTitle>
-            <FolderKanban className="h-4 w-4 text-primary" />
+            <div className="rounded-md bg-accent-green-subtle p-1.5">
+              <FolderKanban className="h-4 w-4 text-accent-green" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{activeProjects}</div>
@@ -125,10 +111,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="transition-colors hover:bg-accent/30">
+        <Card className="border-l-3 border-l-accent-amber transition-colors hover:bg-accent-amber-subtle/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Timmar denna månad</CardTitle>
-            <Clock className="h-4 w-4 text-primary" />
+            <div className="rounded-md bg-accent-amber-subtle p-1.5">
+              <Clock className="h-4 w-4 text-accent-amber" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{hoursThisMonth.toFixed(1)}</div>
@@ -136,10 +124,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="transition-colors hover:bg-accent/30">
+        <Card className="border-l-3 border-l-accent-blue transition-colors hover:bg-accent-blue-subtle/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Offerter att följa upp</CardTitle>
-            <FileText className="h-4 w-4 text-primary" />
+            <div className="rounded-md bg-accent-blue-subtle p-1.5">
+              <FileText className="h-4 w-4 text-accent-blue" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{pendingQuoteCount}</div>
@@ -147,10 +137,12 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="transition-colors hover:bg-accent/30">
+        <Card className="border-l-3 border-l-accent-teal transition-colors hover:bg-accent-teal-subtle/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Leveranser denna vecka</CardTitle>
-            <Truck className="h-4 w-4 text-primary" />
+            <div className="rounded-md bg-accent-teal-subtle p-1.5">
+              <Truck className="h-4 w-4 text-accent-teal" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{deliveryCount}</div>
@@ -159,10 +151,12 @@ export default async function DashboardPage() {
         </Card>
 
         <Link href="/fakturaunderlag" className="block">
-          <Card className="transition-colors hover:bg-accent/30 h-full">
+          <Card className="border-l-3 border-l-accent-rose transition-colors hover:bg-accent-rose-subtle/50 h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Ofakturerade timmar</CardTitle>
-              <Receipt className="h-4 w-4 text-primary" />
+              <div className="rounded-md bg-accent-rose-subtle p-1.5">
+                <Receipt className="h-4 w-4 text-accent-rose" />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{uninvoicedHours.toFixed(1)}</div>
@@ -185,10 +179,10 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {weekActivities.length > 0 && (
-          <Card>
+          <Card className="border-l-3 border-l-accent-green">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <Activity className="h-4 w-4" />
+                <Activity className="h-4 w-4 text-accent-green" />
                 Mina aktiviteter denna vecka
               </CardTitle>
               <Button
@@ -223,10 +217,10 @@ export default async function DashboardPage() {
         )}
 
         {unlinkedActivities.length > 0 && (
-          <Card>
+          <Card className="border-l-3 border-l-accent-amber">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-base">
-                <AlertCircle className="h-4 w-4" />
+                <AlertCircle className="h-4 w-4 text-accent-amber" />
                 Okopplade anteckningar
               </CardTitle>
               <Button
@@ -260,9 +254,10 @@ export default async function DashboardPage() {
       </div>
 
       {recentProjects.length > 0 && (
-        <Card>
+        <Card className="border-l-3 border-l-accent-blue">
           <CardHeader>
-            <CardTitle className="text-base">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FolderKanban className="h-4 w-4 text-accent-blue" />
               Senast uppdaterade projekt
             </CardTitle>
           </CardHeader>
@@ -281,10 +276,8 @@ export default async function DashboardPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge
-                      variant={statusVariants[project.status] ?? "outline"}
-                    >
-                      {statusLabels[project.status] ?? project.status}
+                    <Badge className={projectStatusColors[project.status] ?? ""}>
+                      {projectStatusLabels[project.status] ?? project.status}
                     </Badge>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                   </div>

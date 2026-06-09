@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Phone, Mail, Users, FileText, CheckCircle2, Circle, Clock, Trash2, MessageSquare, ClipboardList } from "lucide-react";
+import { useTransition } from "react";
+import Link from "next/link";
+import { Phone, Mail, Users, CheckCircle2, Circle, Clock, Trash2, MessageSquare, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { updateActivityStatus, deleteActivity } from "@/lib/actions/activities";
 import { formatDate } from "@/lib/format";
 
-const typeConfig: Record<string, { label: string; icon: typeof Phone }> = {
-  anteckning: { label: "Anteckning", icon: MessageSquare },
-  samtal: { label: "Samtal", icon: Phone },
-  mote: { label: "Möte", icon: Users },
-  mejl: { label: "Mail", icon: Mail },
-  uppgift: { label: "Uppgift", icon: ClipboardList },
-  uppfoljning: { label: "Uppföljning", icon: Clock },
+const typeConfig: Record<string, { label: string; icon: typeof Phone; color: string }> = {
+  anteckning: { label: "Anteckning", icon: MessageSquare, color: "bg-accent-blue-subtle text-accent-blue" },
+  samtal: { label: "Samtal", icon: Phone, color: "bg-accent-green-subtle text-accent-green" },
+  mote: { label: "Möte", icon: Users, color: "bg-accent-teal-subtle text-accent-teal" },
+  mejl: { label: "Mail", icon: Mail, color: "bg-accent-blue-subtle text-accent-blue" },
+  uppgift: { label: "Uppgift", icon: ClipboardList, color: "bg-accent-amber-subtle text-accent-amber" },
+  uppfoljning: { label: "Uppföljning", icon: Clock, color: "bg-accent-rose-subtle text-accent-rose" },
 };
 
 interface ActivityItem {
@@ -27,11 +28,17 @@ interface ActivityItem {
   createdAt: Date;
 }
 
-interface ActivityListProps {
-  activities: ActivityItem[];
+interface ActivityContext {
+  customer?: { id: string; companyName: string } | null;
+  project?: { id: string; name: string } | null;
 }
 
-export function ActivityList({ activities }: ActivityListProps) {
+interface ActivityListProps {
+  activities: ActivityItem[];
+  context?: ActivityContext;
+}
+
+export function ActivityList({ activities, context }: ActivityListProps) {
   const [isPending, startTransition] = useTransition();
 
   if (activities.length === 0) {
@@ -59,9 +66,9 @@ export function ActivityList({ activities }: ActivityListProps) {
         return (
           <div
             key={activity.id}
-            className={`rounded-md border p-3 ${
+            className={`rounded-lg border bg-card p-3 ${
               !isOpen ? "opacity-60" : ""
-            } ${isOverdue ? "border-destructive/50 bg-destructive/5" : ""}`}
+            } ${isOverdue ? "border-l-3 border-l-destructive" : ""}`}
           >
             <div className="flex items-start gap-3">
               <button
@@ -74,20 +81,35 @@ export function ActivityList({ activities }: ActivityListProps) {
                     )
                   )
                 }
-                className="mt-0.5 shrink-0"
+                className="mt-0.5 shrink-0 group"
                 title={isOpen ? "Markera klar" : "Öppna igen"}
               >
                 {isOpen ? (
-                  <Circle className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                  <Circle className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary transition-colors" />
                 ) : (
                   <CheckCircle2 className="h-4 w-4 text-primary" />
                 )}
               </button>
 
               <div className="flex-1 min-w-0">
+                {context && (context.customer || context.project) && (
+                  <div className="flex gap-1.5 text-sm text-muted-foreground mb-1">
+                    {context.customer && (
+                      <Link href={`/kunder/${context.customer.id}`} className="hover:underline">
+                        {context.customer.companyName}
+                      </Link>
+                    )}
+                    {context.customer && context.project && <span>/</span>}
+                    {context.project && (
+                      <Link href={`/projekt/${context.project.id}`} className="hover:underline">
+                        {context.project.name}
+                      </Link>
+                    )}
+                  </div>
+                )}
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Icon className="h-3 w-3" />
+                  <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[0.65rem] font-medium ${config.color}`}>
+                    <Icon className="h-2.5 w-2.5" />
                     {config.label}
                   </span>
                   {activity.dueDate && (
@@ -108,7 +130,7 @@ export function ActivityList({ activities }: ActivityListProps) {
                 </div>
 
                 {activity.title && (
-                  <p className="text-sm font-medium mt-0.5">
+                  <p className="font-medium mt-1">
                     {activity.title}
                   </p>
                 )}
@@ -128,7 +150,7 @@ export function ActivityList({ activities }: ActivityListProps) {
                 onClick={() =>
                   startTransition(() => deleteActivity(activity.id))
                 }
-                className="shrink-0"
+                className="shrink-0 opacity-0 group-hover/card:opacity-100 focus:opacity-100 transition-opacity"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>

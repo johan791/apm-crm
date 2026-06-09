@@ -63,30 +63,15 @@ export default async function MejlPage({
 
       <div className="space-y-2">
         {emails.map((email) => (
-          <div key={email.id} className="space-y-1">
-            {(email.customer || email.project) && (
-              <div className="flex gap-2 text-xs text-muted-foreground px-1">
-                {email.customer && (
-                  <Link
-                    href={`/kunder/${email.customer.id}`}
-                    className="hover:underline"
-                  >
-                    {email.customer.companyName}
-                  </Link>
-                )}
-                {email.customer && email.project && <span>/</span>}
-                {email.project && (
-                  <Link
-                    href={`/projekt/${email.project.id}`}
-                    className="hover:underline"
-                  >
-                    {email.project.name}
-                  </Link>
-                )}
-              </div>
-            )}
-            <EmailLogList emails={[email]} />
-          </div>
+          <EmailLogList
+            key={email.id}
+            emails={[email]}
+            context={
+              email.customer || email.project
+                ? { customer: email.customer, project: email.project }
+                : undefined
+            }
+          />
         ))}
         {emails.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">

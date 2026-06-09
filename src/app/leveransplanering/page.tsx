@@ -15,9 +15,9 @@ const eventTypeLabels: Record<string, string> = {
 };
 
 const eventTypeColors: Record<string, string> = {
-  delivery: "bg-blue-100 text-blue-800 border-blue-200",
-  installation: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  pickup: "bg-amber-100 text-amber-800 border-amber-200",
+  delivery: "bg-accent-blue-subtle text-accent-blue",
+  installation: "bg-accent-green-subtle text-accent-green",
+  pickup: "bg-accent-amber-subtle text-accent-amber",
 };
 
 export default async function LeveransplaneringPage({
@@ -123,9 +123,9 @@ export default async function LeveransplaneringPage({
                   className="flex flex-wrap items-center gap-2 sm:gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
                 >
                   <span
-                    className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border ${
+                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
                       eventTypeColors[event.type] ??
-                      "bg-gray-100 text-gray-800 border-gray-200"
+                      "bg-muted text-muted-foreground"
                     }`}
                   >
                     {eventTypeLabels[event.type] ?? event.type}

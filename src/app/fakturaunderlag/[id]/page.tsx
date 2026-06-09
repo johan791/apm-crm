@@ -17,20 +17,7 @@ import { formatDate, formatHours, formatCurrency } from "@/lib/format";
 import { ReopenButton } from "@/components/invoice-basis/reopen-button";
 import { PrintButton } from "@/components/invoice-basis/print-button";
 
-const statusLabels: Record<string, string> = {
-  skapad: "Skapad",
-  skickad: "Skickad",
-  betald: "Betald",
-};
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  skapad: "outline",
-  skickad: "secondary",
-  betald: "default",
-};
+import { invoiceStatusLabels, invoiceStatusColors } from "@/lib/status-colors";
 
 export default async function FakturaunderlagDetaljPage({
   params,
@@ -70,8 +57,8 @@ export default async function FakturaunderlagDetaljPage({
         <div>
           <div className="flex items-center gap-3">
             <h1>Fakturaunderlag #{basis.number}</h1>
-            <Badge variant={statusVariants[basis.status] ?? "outline"}>
-              {statusLabels[basis.status] ?? basis.status}
+            <Badge className={invoiceStatusColors[basis.status] ?? ""}>
+              {invoiceStatusLabels[basis.status] ?? basis.status}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-1">

@@ -14,41 +14,7 @@ import { QuickActivityForm } from "@/components/activities/quick-activity-form";
 import { EmailLogList } from "@/components/email-logs/email-log-list";
 import { QuickEmailForm } from "@/components/email-logs/quick-email-form";
 
-const statusLabels: Record<string, string> = {
-  active: "Aktivt",
-  completed: "Avslutat",
-  paused: "Pausat",
-  cancelled: "Avbrutet",
-};
-
-const statusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  active: "default",
-  completed: "secondary",
-  paused: "outline",
-  cancelled: "destructive",
-};
-
-const quoteStatusLabels: Record<string, string> = {
-  draft: "Utkast",
-  sent: "Skickad",
-  accepted: "Accepterad",
-  rejected: "Avvisad",
-  order: "Order",
-};
-
-const quoteStatusVariants: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  draft: "outline",
-  sent: "secondary",
-  accepted: "default",
-  rejected: "destructive",
-  order: "default",
-};
+import { projectStatusLabels, projectStatusColors, quoteStatusLabels, quoteStatusColors } from "@/lib/status-colors";
 
 export default async function KundDetaljPage({
   params,
@@ -284,8 +250,8 @@ export default async function KundDetaljPage({
                 className="flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-accent"
               >
                 <span className="font-medium">{project.name}</span>
-                <Badge variant={statusVariants[project.status] ?? "outline"}>
-                  {statusLabels[project.status] ?? project.status}
+                <Badge className={projectStatusColors[project.status] ?? ""}>
+                  {projectStatusLabels[project.status] ?? project.status}
                 </Badge>
               </Link>
             ))}
@@ -332,11 +298,7 @@ export default async function KundDetaljPage({
                     <span className="font-medium">
                       Offert #{quote.quoteNumber}
                     </span>
-                    <Badge
-                      variant={
-                        quoteStatusVariants[quote.status] ?? "outline"
-                      }
-                    >
+                    <Badge className={quoteStatusColors[quote.status] ?? ""}>
                       {quoteStatusLabels[quote.status] ?? quote.status}
                     </Badge>
                   </div>
