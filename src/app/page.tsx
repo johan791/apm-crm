@@ -9,6 +9,8 @@ import {
   Activity,
   AlertCircle,
   Receipt,
+  TrendingUp,
+  ShoppingCart,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +43,8 @@ export default async function DashboardPage() {
     weekActivities,
     unlinkedActivities,
     uninvoicedAgg,
+    pipelineQuotes,
+    orderQuotes,
   ] = await Promise.all([
     prisma.project.count({ where: { status: "active" } }),
     prisma.project.findMany({
@@ -83,10 +87,33 @@ export default async function DashboardPage() {
       where: { invoiced: false },
       _sum: { hours: true },
     }),
+    prisma.quote.findMany({
+      where: { status: { in: ["draft", "sent", "accepted"] } },
+      include: { items: { select: { quantity: true, unitPrice: true } } },
+    }),
+    prisma.quote.findMany({
+      where: { status: "order" },
+      include: { items: { select: { quantity: true, unitPrice: true } } },
+    }),
   ]);
 
   const hoursThisMonth = Number(timeEntriesAgg._sum.hours ?? 0);
   const uninvoicedHours = Number(uninvoicedAgg._sum.hours ?? 0);
+
+  const sumQuoteValue = (quotes: typeof pipelineQuotes) =>
+    quotes.reduce(
+      (sum, q) =>
+        sum +
+        q.items.reduce(
+          (s, item) => s + Number(item.quantity) * Number(item.unitPrice),
+          0
+        ),
+      0
+    );
+  const pipelineCount = pipelineQuotes.length;
+  const pipelineValue = sumQuoteValue(pipelineQuotes);
+  const orderCount = orderQuotes.length;
+  const orderValue = sumQuoteValue(orderQuotes);
 
   const todayStr = formatDate(now);
 
@@ -97,7 +124,7 @@ export default async function DashboardPage() {
         <p className="text-sm font-medium text-muted-foreground">{todayStr}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-l-3 border-l-accent-green transition-colors hover:bg-accent-green-subtle/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Aktiva projekt</CardTitle>
@@ -121,19 +148,6 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{hoursThisMonth.toFixed(1)}</div>
             <p className="text-xs text-muted-foreground">rapporterade</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-3 border-l-accent-blue transition-colors hover:bg-accent-blue-subtle/50">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Offerter att följa upp</CardTitle>
-            <div className="rounded-md bg-accent-blue-subtle p-1.5">
-              <FileText className="h-4 w-4 text-accent-blue" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingQuoteCount}</div>
-            <p className="text-xs text-muted-foreground">skickade & accepterade</p>
           </CardContent>
         </Card>
 
@@ -161,6 +175,44 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="text-2xl font-bold">{uninvoicedHours.toFixed(1)}</div>
               <p className="text-xs text-muted-foreground">att fakturera</p>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Link href="/offerter" className="block">
+          <Card className="border-l-3 border-l-accent-blue transition-colors hover:bg-accent-blue-subtle/50 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Offerter i pipeline</CardTitle>
+              <div className="rounded-md bg-accent-blue-subtle p-1.5">
+                <TrendingUp className="h-4 w-4 text-accent-blue" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pipelineCount} st</div>
+              <p className="text-sm font-semibold text-accent-blue">
+                {pipelineValue.toLocaleString("sv-SE")} kr
+              </p>
+              <p className="text-xs text-muted-foreground">utkast, skickade & accepterade</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/offerter?status=order" className="block">
+          <Card className="border-l-3 border-l-accent-green transition-colors hover:bg-accent-green-subtle/50 h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Ordrar</CardTitle>
+              <div className="rounded-md bg-accent-green-subtle p-1.5">
+                <ShoppingCart className="h-4 w-4 text-accent-green" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{orderCount} st</div>
+              <p className="text-sm font-semibold text-accent-green">
+                {orderValue.toLocaleString("sv-SE")} kr
+              </p>
+              <p className="text-xs text-muted-foreground">bekräftade ordrar</p>
             </CardContent>
           </Card>
         </Link>
