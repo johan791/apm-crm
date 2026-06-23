@@ -25,6 +25,11 @@
 *.pem
 cookies.txt
 
+# Fortnox exports (customer data)
+kundregister.csv
+Report_*.txt
+Projektlista fortnox.pdf
+
 # debug
 npm-debug.log*
 yarn-debug.log*
