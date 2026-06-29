@@ -9,12 +9,21 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency } from "@/lib/format";
 import { DeleteCustomerButton } from "@/components/customers/delete-customer-button";
 import { ContactList } from "@/components/customers/contact-list";
+import { SharePointFiles } from "@/components/customers/sharepoint-files";
 import { ActivityList } from "@/components/activities/activity-list";
 import { QuickActivityForm } from "@/components/activities/quick-activity-form";
 import { EmailLogList } from "@/components/email-logs/email-log-list";
 import { QuickEmailForm } from "@/components/email-logs/quick-email-form";
 
 import { projectStatusLabels, projectStatusColors, quoteStatusLabels, quoteStatusColors } from "@/lib/status-colors";
+
+function getSharePointFolderName(url: string): string | null {
+  const marker = "/1.%20Kunder/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  const rest = url.substring(idx + marker.length);
+  return decodeURIComponent(rest.split("/")[0]);
+}
 
 export default async function KundDetaljPage({
   params,
@@ -124,7 +133,13 @@ export default async function KundDetaljPage({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {customer.onedriveFolderUrl ? (
+            {customer.onedriveFolderUrl &&
+            getSharePointFolderName(customer.onedriveFolderUrl) ? (
+              <SharePointFiles
+                folderName={getSharePointFolderName(customer.onedriveFolderUrl)!}
+                sharePointUrl={customer.onedriveFolderUrl}
+              />
+            ) : customer.onedriveFolderUrl ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
                   Kundmapp kopplad till OneDrive.
@@ -146,15 +161,8 @@ export default async function KundDetaljPage({
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Ingen OneDrive-mapp kopplad ännu. Koppla kundens dokumentmapp
-                  för snabb åtkomst till ritningar, moodboards och fakturor.
+                  Ingen OneDrive-mapp kopplad ännu.
                 </p>
-                <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
-                  <p className="font-medium text-foreground">Så här gör du:</p>
-                  <p>1. Öppna kundens mapp i OneDrive</p>
-                  <p>2. Högerklicka på mappen och välj &quot;Kopiera länk&quot;</p>
-                  <p>3. Klicka &quot;Redigera&quot; ovan och klistra in länken i fältet &quot;OneDrive-mapp&quot;</p>
-                </div>
                 <Button
                   variant="outline"
                   size="sm"

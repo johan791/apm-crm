@@ -11,6 +11,7 @@
     "db:seed": "npx tsx prisma/seed.ts",
     "db:push": "npx prisma db push",
     "db:import": "npx tsx prisma/import-fortnox.ts",
+    "db:link-sharepoint": "npx tsx prisma/link-sharepoint-folders.ts",
     "postinstall": "npx prisma generate"
   },
   "dependencies": {

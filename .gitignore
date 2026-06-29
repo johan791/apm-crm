@@ -29,6 +29,8 @@ cookies.txt
 kundregister.csv
 Report_*.txt
 Projektlista fortnox.pdf
+*.jpg
+instruktioner-it-konsult.md
 
 # debug
 npm-debug.log*
