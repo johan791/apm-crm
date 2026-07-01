@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Plus, Clock, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, Clock, Pencil, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -60,10 +60,20 @@ export default async function ProjektTidPage({
             {project.customer.companyName}
           </Link>
         </div>
-        <Button render={<Link href={`/projekt/${project.id}/tid/ny`} />}>
-          <Plus className="mr-2 h-4 w-4" />
-          Ny tidspost
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href={`/projekt/${project.id}/tid/skriv-ut`} />}
+          >
+            <Printer className="mr-2 h-4 w-4" />
+            Skriv ut
+          </Button>
+          <Button render={<Link href={`/projekt/${project.id}/tid/ny`} />}>
+            <Plus className="mr-2 h-4 w-4" />
+            Ny tidspost
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
