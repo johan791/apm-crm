@@ -4,7 +4,9 @@ import { authConfig } from "@/lib/auth.config";
 // Använder next-auth:s middleware, som verifierar JWT-signaturen på
 // sessions-cookien via authorized-callbacken i auth.config.ts.
 // (Ersätter den tidigare kontrollen som bara kollade att cookien fanns.)
-export const { auth: middleware } = NextAuth(authConfig);
+// Default-export så att Next.js 16 entydigt känner igen den som en
+// middleware-funktion (en destrukturerad const-export gör inte det).
+export default NextAuth(authConfig).auth;
 
 export const config = {
   // Undanta hela /api från middleware — de skyddas var för sig i sina
