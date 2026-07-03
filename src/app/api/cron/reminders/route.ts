@@ -5,6 +5,17 @@ import { sendReminderEmail } from "@/lib/mail";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Escapa användarinmatning innan den interpoleras i mail-HTML, så att t.ex.
+// ett projektnamn eller en aktivitetstitel inte kan injicera markup/länkar.
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -54,9 +65,9 @@ export async function GET(request: Request) {
   if (deliveryEvents.length > 0) {
     const rows = deliveryEvents
       .map((e) => {
-        const time = e.time ? ` kl ${e.time}` : "";
-        const addr = e.address ? ` — ${e.address}` : "";
-        return `<li><strong>${e.project.name}</strong> (${e.customer.companyName})${time}${addr}</li>`;
+        const time = e.time ? ` kl ${escapeHtml(e.time)}` : "";
+        const addr = e.address ? ` — ${escapeHtml(e.address)}` : "";
+        return `<li><strong>${escapeHtml(e.project.name)}</strong> (${escapeHtml(e.customer.companyName)})${time}${addr}</li>`;
       })
       .join("");
     parts.push(
@@ -67,10 +78,11 @@ export async function GET(request: Request) {
   if (activities.length > 0) {
     const rows = activities
       .map((a) => {
-        const who = a.assignedTo?.name ? ` — ${a.assignedTo.name}` : "";
+        const who = a.assignedTo?.name ? ` — ${escapeHtml(a.assignedTo.name)}` : "";
         const ctx = a.customer?.companyName ?? a.project?.name ?? "";
-        const ctxStr = ctx ? ` (${ctx})` : "";
-        return `<li><strong>${a.title ?? a.description.slice(0, 80)}</strong>${ctxStr}${who}</li>`;
+        const ctxStr = ctx ? ` (${escapeHtml(ctx)})` : "";
+        const label = a.title ?? a.description.slice(0, 80);
+        return `<li><strong>${escapeHtml(label)}</strong>${ctxStr}${who}</li>`;
       })
       .join("");
     parts.push(

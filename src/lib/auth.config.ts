@@ -4,6 +4,16 @@ export const authConfig: NextAuthConfig = {
   pages: {
     signIn: "/login",
   },
+  logger: {
+    error(error) {
+      // En trasig eller förfalskad sessions-cookie ger JWTSessionError
+      // (JWEInvalid) vid varje förfrågan — det är förväntat när någon skickar
+      // en ogiltig cookie, inte ett driftfel. Tysta det bruset; logga allt
+      // annat som vanligt.
+      if (error?.name === "JWTSessionError") return;
+      console.error(error);
+    },
+  },
   callbacks: {
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
