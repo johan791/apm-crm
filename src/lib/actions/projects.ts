@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function createProject(formData: FormData) {
+  await requireAuth();
   const hourlyRate = formData.get("hourlyRate") as string;
   const startDate = formData.get("startDate") as string;
   const endDate = formData.get("endDate") as string;
@@ -29,6 +31,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function updateProject(id: string, formData: FormData) {
+  await requireAuth();
   const hourlyRate = formData.get("hourlyRate") as string;
   const startDate = formData.get("startDate") as string;
   const endDate = formData.get("endDate") as string;
@@ -55,6 +58,7 @@ export async function updateProject(id: string, formData: FormData) {
 }
 
 export async function deleteProject(id: string) {
+  await requireAuth();
   await prisma.project.delete({ where: { id } });
   revalidatePath("/projekt");
   revalidatePath("/");
@@ -62,6 +66,7 @@ export async function deleteProject(id: string) {
 }
 
 export async function updateProjectStatus(id: string, status: string) {
+  await requireAuth();
   await prisma.project.update({
     where: { id },
     data: { status },

@@ -86,6 +86,15 @@ export async function listFolderFiles(
 export async function listCustomerFiles(
   folderName: string
 ): Promise<SharePointFile[]> {
+  // Skydd i djupet mot path traversal — folderName ska vara ett enskilt
+  // mappnamn, aldrig en sökväg ut ur kundmappen.
+  if (
+    folderName.includes("..") ||
+    folderName.includes("/") ||
+    folderName.includes("\\")
+  ) {
+    throw new Error("Invalid folder name");
+  }
   return listFolderFiles(`${SHAREPOINT_CUSTOMER_BASE_PATH}/${folderName}`);
 }
 

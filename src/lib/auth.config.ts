@@ -5,6 +5,20 @@ export const authConfig: NextAuthConfig = {
     signIn: "/login",
   },
   callbacks: {
+    authorized({ auth, request }) {
+      const isLoggedIn = !!auth?.user;
+      const { pathname } = request.nextUrl;
+
+      // Inloggad användare som besöker /login skickas till startsidan.
+      if (pathname === "/login") {
+        if (isLoggedIn) return Response.redirect(new URL("/", request.nextUrl));
+        return true;
+      }
+
+      // Alla andra sidor kräver en giltig session (JWT-signaturen verifieras).
+      // Returnerar false → next-auth redirectar till signIn-sidan (/login).
+      return isLoggedIn;
+    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;

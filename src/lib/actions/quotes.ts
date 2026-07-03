@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function createQuote(formData: FormData) {
+  await requireAuth();
   const lastQuote = await prisma.quote.findFirst({
     orderBy: { quoteNumber: "desc" },
   });
@@ -31,6 +33,7 @@ export async function createQuote(formData: FormData) {
 }
 
 export async function updateQuote(id: string, formData: FormData) {
+  await requireAuth();
   const validUntil = formData.get("validUntil") as string;
   const projectId = formData.get("projectId") as string;
 
@@ -53,6 +56,7 @@ export async function updateQuote(id: string, formData: FormData) {
 }
 
 export async function saveQuoteItems(quoteId: string, formData: FormData) {
+  await requireAuth();
   const itemsJson = formData.get("items") as string;
   const items = JSON.parse(itemsJson) as Array<{
     description: string;
@@ -89,6 +93,7 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
 }
 
 export async function updateQuoteStatus(id: string, status: string) {
+  await requireAuth();
   await prisma.quote.update({ where: { id }, data: { status } });
   revalidatePath(`/offerter/${id}`);
   revalidatePath("/offerter");
@@ -96,6 +101,7 @@ export async function updateQuoteStatus(id: string, status: string) {
 }
 
 export async function convertToOrder(id: string) {
+  await requireAuth();
   await prisma.quote.update({ where: { id }, data: { status: "order" } });
   revalidatePath(`/offerter/${id}`);
   revalidatePath("/offerter");
@@ -103,6 +109,7 @@ export async function convertToOrder(id: string) {
 }
 
 export async function createProjectFromQuote(id: string) {
+  await requireAuth();
   const quote = await prisma.quote.findUnique({
     where: { id },
     include: { customer: true },
@@ -131,6 +138,7 @@ export async function createProjectFromQuote(id: string) {
 }
 
 export async function deleteQuote(id: string) {
+  await requireAuth();
   await prisma.quote.delete({ where: { id } });
   revalidatePath("/offerter");
   revalidatePath("/");

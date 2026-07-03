@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function createCustomer(formData: FormData) {
+  await requireAuth();
   const customer = await prisma.customer.create({
     data: {
       companyName: formData.get("companyName") as string,
@@ -28,6 +30,7 @@ export async function createCustomer(formData: FormData) {
 }
 
 export async function updateCustomer(id: string, formData: FormData) {
+  await requireAuth();
   await prisma.customer.update({
     where: { id },
     data: {
@@ -53,6 +56,7 @@ export async function updateCustomer(id: string, formData: FormData) {
 }
 
 export async function deleteCustomer(id: string) {
+  await requireAuth();
   await prisma.customer.delete({ where: { id } });
   revalidatePath("/kunder");
   revalidatePath("/");

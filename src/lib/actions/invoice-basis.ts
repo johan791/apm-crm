@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { currentUserId } from "@/lib/current-user";
+import { requireUserId, requireAuth } from "@/lib/current-user";
 
 export async function createInvoiceBasis(formData: FormData) {
-  const userId = await currentUserId();
+  const userId = await requireUserId();
   const projectId = formData.get("projectId") as string;
   const notes = (formData.get("notes") as string) || null;
   const customerReference = (formData.get("customerReference") as string) || null;
@@ -90,6 +90,7 @@ export async function createInvoiceBasis(formData: FormData) {
 }
 
 export async function reopenInvoiceBasis(id: string) {
+  await requireAuth();
   const basis = await prisma.invoiceBasis.findUnique({
     where: { id },
     include: { timeEntries: true },
@@ -106,6 +107,18 @@ export async function reopenInvoiceBasis(id: string) {
 
   revalidatePath("/fakturaunderlag");
   redirect("/fakturaunderlag");
+}
+
+/**
+ * Bygger en CSV-cell för en textkolumn. Skyddar mot:
+ *  - fältseparering (omsluter med citattecken, dubblar interna citattecken)
+ *  - formelinjektion (Excel/Sheets kör celler som börjar med = + - @ eller
+ *    tab/CR som formler) genom att prefixa ett apostroftecken.
+ */
+function csvText(value: string | null | undefined): string {
+  const v = value ?? "";
+  const guarded = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+  return `"${guarded.replace(/"/g, '""')}"`;
 }
 
 export async function exportInvoiceBasisCsv(id: string): Promise<string> {
@@ -134,13 +147,13 @@ export async function exportInvoiceBasisCsv(id: string): Promise<string> {
       [
         "Tid",
         entry.date.toISOString().slice(0, 10),
-        `"${(entry.description ?? "").replace(/"/g, '""')}"`,
+        csvText(entry.description),
         hours.toFixed(2).replace(".", ","),
         "tim",
         hourlyRate ? hourlyRate.toFixed(2).replace(".", ",") : "",
         amount ? amount.toFixed(2).replace(".", ",") : "",
-        `"${basis.project.name}"`,
-        `"${basis.project.customer.companyName}"`,
+        csvText(basis.project.name),
+        csvText(basis.project.customer.companyName),
       ].join(sep)
     );
   }
@@ -152,13 +165,13 @@ export async function exportInvoiceBasisCsv(id: string): Promise<string> {
       [
         "Rad",
         "",
-        `"${line.description.replace(/"/g, '""')}"`,
+        csvText(line.description),
         qty.toFixed(2).replace(".", ","),
-        line.unit,
+        csvText(line.unit),
         price.toFixed(2).replace(".", ","),
         (qty * price).toFixed(2).replace(".", ","),
-        `"${basis.project.name}"`,
-        `"${basis.project.customer.companyName}"`,
+        csvText(basis.project.name),
+        csvText(basis.project.customer.companyName),
       ].join(sep)
     );
   }

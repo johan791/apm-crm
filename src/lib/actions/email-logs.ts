@@ -3,10 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { currentUserId } from "@/lib/current-user";
+import { requireUserId, requireAuth } from "@/lib/current-user";
 
 export async function createEmailLog(formData: FormData) {
-  const userId = await currentUserId();
+  const userId = await requireUserId();
   const subject = formData.get("subject") as string;
   const body = (formData.get("body") as string) || null;
   const counterpart = formData.get("counterpart") as string;
@@ -41,6 +41,7 @@ export async function createEmailLog(formData: FormData) {
 }
 
 export async function deleteEmailLog(id: string) {
+  await requireAuth();
   await prisma.emailLog.delete({ where: { id } });
   revalidatePath("/mejl");
 }

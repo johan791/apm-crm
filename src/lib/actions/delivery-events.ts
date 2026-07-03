@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function createDeliveryEvent(formData: FormData) {
+  await requireAuth();
   await prisma.deliveryEvent.create({
     data: {
       type: formData.get("type") as string,
@@ -23,6 +25,7 @@ export async function createDeliveryEvent(formData: FormData) {
 }
 
 export async function updateDeliveryEvent(id: string, formData: FormData) {
+  await requireAuth();
   await prisma.deliveryEvent.update({
     where: { id },
     data: {
@@ -42,6 +45,7 @@ export async function updateDeliveryEvent(id: string, formData: FormData) {
 }
 
 export async function deleteDeliveryEvent(id: string) {
+  await requireAuth();
   await prisma.deliveryEvent.delete({ where: { id } });
   revalidatePath("/leveransplanering");
   revalidatePath("/");
