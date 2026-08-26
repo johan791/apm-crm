@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import { getWeekNumber, formatDate } from "@/lib/format";
 
 const eventTypeLabels: Record<string, string> = {
@@ -21,6 +22,7 @@ interface EventItem {
   date: Date;
   time: string | null;
   notes: string | null;
+  completedAt: Date | null;
   project: { name: string };
   customer: { companyName: string };
 }
@@ -73,6 +75,15 @@ export function EventList({ events }: EventListProps) {
                   {formatDate(event.date)}
                   {event.time ? ` kl. ${event.time}` : ""}
                 </span>
+                {event.completedAt && (
+                  <span
+                    className="inline-flex items-center gap-1 text-xs font-medium text-status-active shrink-0"
+                    title={`Genomförd ${formatDate(event.completedAt)}`}
+                  >
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Genomförd
+                  </span>
+                )}
                 <span className="text-sm truncate">
                   {event.project.name}
                 </span>

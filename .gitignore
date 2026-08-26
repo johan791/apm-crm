@@ -58,3 +58,8 @@ next-env.d.ts
 .vercel
 
 .env*.local
+
+# Kunddata (Excel från APM)
+CRM.xlsx
+Offert - *.pdf
+Orderbekr*.pdf

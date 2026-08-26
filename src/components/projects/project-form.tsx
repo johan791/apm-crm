@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Project, Customer, User } from "@/generated/prisma";
+import type { Project, Customer, User, Contact } from "@/generated/prisma";
 
 interface ProjectFormProps {
   action: (formData: FormData) => Promise<void>;
@@ -12,6 +13,7 @@ interface ProjectFormProps {
   project?: Project;
   defaultCustomerId?: string;
   users?: User[];
+  contacts?: Contact[];
 }
 
 const statuses = [
@@ -32,7 +34,15 @@ export function ProjectForm({
   project,
   defaultCustomerId,
   users,
+  contacts,
 }: ProjectFormProps) {
+  const [customerId, setCustomerId] = useState(
+    project?.customerId ?? defaultCustomerId ?? ""
+  );
+  const customerContacts = (contacts ?? []).filter(
+    (c) => c.customerId === customerId
+  );
+
   return (
     <form action={action}>
       <Card>
@@ -58,7 +68,8 @@ export function ProjectForm({
                 id="customerId"
                 name="customerId"
                 required
-                defaultValue={project?.customerId ?? defaultCustomerId ?? ""}
+                value={customerId}
+                onChange={(e) => setCustomerId(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="" disabled>
@@ -71,6 +82,33 @@ export function ProjectForm({
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="contactId">Kontaktperson</Label>
+            <select
+              id="contactId"
+              name="contactId"
+              key={customerId}
+              defaultValue={project?.contactId ?? ""}
+              disabled={!customerId}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <option value="">Ingen kontaktperson</option>
+              {customerContacts.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.role ? ` – ${c.role}` : ""}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {!customerId
+                ? "Välj kund först."
+                : customerContacts.length === 0
+                  ? "Kunden har inga registrerade kontaktpersoner ännu – lägg till dem på kundkortet."
+                  : "Kontaktpersonen hos kunden som projektet drivs mot."}
+            </p>
           </div>
 
           <div className="space-y-2">

@@ -9,6 +9,17 @@ export function formatCurrency(amount: number | Decimal): string {
   }).format(Number(amount));
 }
 
+/**
+ * Belopp utan valutasymbol med två decimaler ("257 400,00"), som Fortnox
+ * skriver ut på offerter och orderbekräftelser.
+ */
+export function formatAmount(amount: number | Decimal): string {
+  return new Intl.NumberFormat("sv-SE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(amount));
+}
+
 export function formatDate(date: Date | null | undefined): string {
   if (!date) return "–";
   return date.toLocaleDateString("sv-SE");

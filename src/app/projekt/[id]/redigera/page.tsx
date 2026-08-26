@@ -12,10 +12,11 @@ export default async function RedigeraProjektPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [project, customers, users] = await Promise.all([
+  const [project, customers, users, contacts] = await Promise.all([
     prisma.project.findUnique({ where: { id } }),
     prisma.customer.findMany({ orderBy: { companyName: "asc" } }),
     prisma.user.findMany({ orderBy: { name: "asc" } }),
+    prisma.contact.findMany({ orderBy: { name: "asc" } }),
   ]);
 
   if (!project) notFound();
@@ -37,6 +38,7 @@ export default async function RedigeraProjektPage({
         customers={customers}
         project={project}
         users={users}
+        contacts={contacts}
       />
     </div>
   );

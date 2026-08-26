@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/format";
 
 interface QuoteItem {
   tempId: string;
+  articleNumber: string;
   description: string;
   unit: string;
   quantity: number;
@@ -21,6 +22,7 @@ interface QuoteItemsEditorProps {
   quoteId: string;
   initialItems?: Array<{
     id: string;
+    articleNumber: string;
     description: string;
     unit: string;
     quantity: number;
@@ -55,6 +57,7 @@ export function QuoteItemsEditor({
     initialItems && initialItems.length > 0
       ? initialItems.map((item) => ({
           tempId: generateId(),
+          articleNumber: item.articleNumber,
           description: item.description,
           unit: item.unit,
           quantity: Number(item.quantity),
@@ -65,6 +68,7 @@ export function QuoteItemsEditor({
       : [
           {
             tempId: generateId(),
+            articleNumber: "",
             description: "",
             unit: "st",
             quantity: 1,
@@ -88,6 +92,7 @@ export function QuoteItemsEditor({
       ...prev,
       {
         tempId: generateId(),
+        articleNumber: "",
         description: "",
         unit: "st",
         quantity: 1,
@@ -115,6 +120,7 @@ export function QuoteItemsEditor({
   const marginPercent = totalSales > 0 ? (marginKr / totalSales) * 100 : 0;
 
   const itemsForSubmit = items.map((item, index) => ({
+    articleNumber: item.articleNumber,
     description: item.description,
     unit: item.unit,
     quantity: item.quantity,
@@ -140,6 +146,7 @@ export function QuoteItemsEditor({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
+                    <th className="pb-2 pr-2 font-medium min-w-[80px]">Artnr</th>
                     <th className="pb-2 pr-2 font-medium min-w-[200px]">Beskrivning</th>
                     <th className="pb-2 pr-2 font-medium min-w-[80px]">Enhet</th>
                     <th className="pb-2 pr-2 font-medium text-right min-w-[70px]">Antal</th>
@@ -153,6 +160,21 @@ export function QuoteItemsEditor({
                 <tbody>
                   {items.map((item) => (
                     <tr key={item.tempId} className="border-b last:border-0">
+                      <td className="py-2 pr-2">
+                        <input
+                          type="text"
+                          value={item.articleNumber}
+                          onChange={(e) =>
+                            updateItem(
+                              item.tempId,
+                              "articleNumber",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Artnr"
+                          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </td>
                       <td className="py-2 pr-2">
                         <input
                           type="text"

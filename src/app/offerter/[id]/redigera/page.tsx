@@ -13,13 +13,15 @@ export default async function RedigeraOffertPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [quote, customers, projects] = await Promise.all([
+  const [quote, customers, projects, contacts, users] = await Promise.all([
     prisma.quote.findUnique({
       where: { id },
       include: { items: { orderBy: { sortOrder: "asc" } } },
     }),
     prisma.customer.findMany({ orderBy: { companyName: "asc" } }),
     prisma.project.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    prisma.contact.findMany({ orderBy: { name: "asc" } }),
+    prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
 
   if (!quote) notFound();
@@ -28,6 +30,7 @@ export default async function RedigeraOffertPage({
 
   const initialItems = quote.items.map((item) => ({
     id: item.id,
+    articleNumber: item.articleNumber ?? "",
     description: item.description,
     unit: item.unit,
     quantity: Number(item.quantity),
@@ -53,6 +56,8 @@ export default async function RedigeraOffertPage({
         customers={customers}
         projects={projects}
         quote={quote}
+        contacts={contacts}
+        users={users}
       />
 
       <QuoteItemsEditor quoteId={quote.id} initialItems={initialItems} />

@@ -40,6 +40,7 @@ export default async function ProjektDetaljPage({
     where: { id },
     include: {
       customer: true,
+      contact: true,
       responsibleUser: true,
       partners: { include: { partner: true } },
       activities: {
@@ -71,10 +72,20 @@ export default async function ProjektDetaljPage({
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" size="sm" render={<Link href="/projekt" />}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Tillbaka till projekt
-      </Button>
+      <div className="flex flex-wrap items-center gap-1 text-sm">
+        <Button
+          variant="ghost"
+          size="sm"
+          render={<Link href={`/kunder/${project.customer.id}`} />}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Tillbaka till {project.customer.companyName}
+        </Button>
+        <span className="text-muted-foreground">·</span>
+        <Button variant="ghost" size="sm" render={<Link href="/projekt" />}>
+          Alla projekt
+        </Button>
+      </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
@@ -129,6 +140,32 @@ export default async function ProjektDetaljPage({
                 {project.customer.companyName}
               </Link>
             </div>
+            {project.contact && (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Kontaktperson:</span>
+                <span>
+                  {project.contact.name}
+                  {project.contact.role ? ` (${project.contact.role})` : ""}
+                </span>
+                {project.contact.email && (
+                  <a
+                    href={`mailto:${project.contact.email}`}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    {project.contact.email}
+                  </a>
+                )}
+                {project.contact.phone && (
+                  <a
+                    href={`tel:${project.contact.phone}`}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    {project.contact.phone}
+                  </a>
+                )}
+              </div>
+            )}
             {project.responsibleUser && (
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />

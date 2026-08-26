@@ -28,6 +28,7 @@ export default async function OffertDetaljPage({
     where: { id },
     include: {
       customer: true,
+      contact: true,
       project: true,
       items: { orderBy: { sortOrder: "asc" } },
     },
@@ -67,7 +68,9 @@ export default async function OffertDetaljPage({
         <div className="space-y-1">
           <div className="flex items-center gap-3">
             <h1>
-              Offert #{quote.quoteNumber}
+              {quote.status === "order" && quote.orderNumber
+                ? `Order #${quote.orderNumber}`
+                : `Offert #${quote.quoteNumber}`}
             </h1>
             <QuoteStatusSelect
               quoteId={quote.id}
@@ -90,8 +93,14 @@ export default async function OffertDetaljPage({
               </Link>
             )}
             <span>Skapad {formatDate(quote.createdAt)}</span>
+            {quote.status === "order" && quote.orderNumber && (
+              <span>Offertnr {quote.quoteNumber}</span>
+            )}
             {quote.validUntil && (
               <span>Giltig t.o.m. {formatDate(quote.validUntil)}</span>
+            )}
+            {quote.deliveryDate && (
+              <span>Leverans {formatDate(quote.deliveryDate)}</span>
             )}
           </div>
         </div>
@@ -112,19 +121,19 @@ export default async function OffertDetaljPage({
             <Printer className="mr-2 h-4 w-4" />
             Skriv ut
           </Button>
-          {quote.status === "accepted" && !quote.projectId && (
-            <form action={createProjectWithId}>
-              <Button type="submit" size="sm">
-                <FolderPlus className="mr-2 h-4 w-4" />
-                Skapa projekt
-              </Button>
-            </form>
-          )}
-          {quote.status === "accepted" && quote.projectId && (
+          {quote.status !== "order" && (
             <form action={convertWithId}>
               <Button type="submit" size="sm">
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Konvertera till order
+                Gör till order
+              </Button>
+            </form>
+          )}
+          {!quote.projectId && (
+            <form action={createProjectWithId}>
+              <Button type="submit" variant="outline" size="sm">
+                <FolderPlus className="mr-2 h-4 w-4" />
+                Skapa projekt
               </Button>
             </form>
           )}
@@ -140,8 +149,17 @@ export default async function OffertDetaljPage({
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <p className="font-medium">{quote.customer.companyName}</p>
-            {quote.customer.contactPerson && (
-              <p className="text-muted-foreground">{quote.customer.contactPerson}</p>
+            {quote.contact ? (
+              <p className="text-muted-foreground">
+                {quote.contact.name}
+                {quote.contact.role ? ` (${quote.contact.role})` : ""}
+              </p>
+            ) : (
+              quote.customer.contactPerson && (
+                <p className="text-muted-foreground">
+                  {quote.customer.contactPerson}
+                </p>
+              )
             )}
             {quote.customer.address && (
               <p className="text-muted-foreground">{quote.customer.address}</p>
@@ -167,6 +185,22 @@ export default async function OffertDetaljPage({
             <CardTitle className="text-base">Villkor</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
+            {(quote.ourReference || quote.yourReference) && (
+              <div className="grid grid-cols-2 gap-3">
+                {quote.ourReference && (
+                  <div>
+                    <p className="text-muted-foreground">Vår referens</p>
+                    <p>{quote.ourReference}</p>
+                  </div>
+                )}
+                {quote.yourReference && (
+                  <div>
+                    <p className="text-muted-foreground">Er referens</p>
+                    <p>{quote.yourReference}</p>
+                  </div>
+                )}
+              </div>
+            )}
             {quote.paymentTerms && (
               <div>
                 <p className="text-muted-foreground">Betalningsvillkor</p>
@@ -203,6 +237,7 @@ export default async function OffertDetaljPage({
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Artnr</TableHead>
                     <TableHead>Beskrivning</TableHead>
                     <TableHead>Enhet</TableHead>
                     <TableHead className="text-right">Antal</TableHead>
@@ -219,6 +254,9 @@ export default async function OffertDetaljPage({
                       (1 - Number(item.discount) / 100);
                     return (
                       <TableRow key={item.id}>
+                        <TableCell className="text-muted-foreground">
+                          {item.articleNumber ?? "–"}
+                        </TableCell>
                         <TableCell>{item.description}</TableCell>
                         <TableCell>{item.unit === "m2" ? "m²" : item.unit}</TableCell>
                         <TableCell className="text-right">
