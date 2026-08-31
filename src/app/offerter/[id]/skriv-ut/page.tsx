@@ -2,9 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatAmount, formatDate } from "@/lib/format";
+import { company, defaultTerms } from "@/lib/company";
 import { PrintButton } from "./print-button";
 
+/**
+ * Utskrift av offert / orderbekräftelse i samma uppställning som APM:s
+ * Fortnox-mallar, så att kunden känner igen dokumentet oavsett vilket
+ * system det kommer ur.
+ */
 export default async function SkrivUtOffertPage({
   params,
 }: {
@@ -15,6 +21,7 @@ export default async function SkrivUtOffertPage({
     where: { id },
     include: {
       customer: true,
+      contact: true,
       project: true,
       items: { orderBy: { sortOrder: "asc" } },
     },
@@ -22,20 +29,50 @@ export default async function SkrivUtOffertPage({
 
   if (!quote) notFound();
 
-  const sumExMoms = quote.items.reduce(
-    (sum, item) =>
-      sum +
-      Number(item.quantity) *
-        Number(item.unitPrice) *
-        (1 - Number(item.discount) / 100),
-    0
-  );
-  const moms = sumExMoms * 0.25;
-  const totalInkMoms = sumExMoms + moms;
+  const isOrder = quote.status === "order";
+  const title = isOrder ? "Orderbekräftelse" : "Offert";
+
+  const lineTotal = (item: (typeof quote.items)[number]) =>
+    Number(item.quantity) *
+    Number(item.unitPrice) *
+    (1 - Number(item.discount) / 100);
+
+  const sumExMoms = quote.items.reduce((sum, item) => sum + lineTotal(item), 0);
+  const moms = sumExMoms * defaultTerms.vatRate;
+  const totalIncMoms = sumExMoms + moms;
+
+  const hasDiscount = quote.items.some((item) => Number(item.discount) > 0);
+
+  // Kolumnerna följer Fortnox: orderbekräftelsen har en extra "Lev ant".
+  const meta: Array<{ label: string; value: string }> = [
+    { label: "Kundnr", value: quote.customer.customerNumber ?? "–" },
+    { label: "Vår referens", value: quote.ourReference ?? "–" },
+    ...(quote.yourReference
+      ? [{ label: "Er referens", value: quote.yourReference }]
+      : []),
+    {
+      label: "Betalningsvillkor",
+      value: quote.paymentTerms ?? defaultTerms.paymentTerms,
+    },
+    ...(isOrder
+      ? []
+      : [
+          {
+            label: "Giltig tom",
+            value: quote.validUntil ? formatDate(quote.validUntil) : "–",
+          },
+        ]),
+    { label: "Dröjsmålsränta", value: defaultTerms.lateInterest },
+    ...(quote.deliveryDate
+      ? [{ label: "Leveransdatum", value: formatDate(quote.deliveryDate) }]
+      : []),
+    ...(isOrder
+      ? [{ label: "Vårt offertnr", value: String(quote.quoteNumber) }]
+      : []),
+  ];
 
   return (
     <div>
-      {/* Navigation bar - hidden when printing */}
       <div className="mb-6 flex items-center justify-between print:hidden">
         <Link
           href={`/offerter/${quote.id}`}
@@ -44,159 +81,238 @@ export default async function SkrivUtOffertPage({
           <ArrowLeft className="h-4 w-4" />
           Tillbaka
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            Förhandsgranskning — så här ser {title.toLowerCase()}en ut utskriven
+          </span>
+          <PrintButton />
+        </div>
       </div>
 
-      {/* Print-optimized A4 layout */}
-      <div className="mx-auto max-w-[210mm] rounded-md border bg-white p-8 shadow-sm print:border-none print:shadow-none print:p-0">
-        {/* Header */}
-        <div className="flex items-start justify-between">
+      <div className="mx-auto max-w-[210mm] rounded-md border bg-white p-10 text-[13px] leading-snug text-black shadow-sm print:border-none print:p-0 print:shadow-none">
+        {/* Sidhuvud: avsändare till vänster, dokumenttyp och nummer till höger */}
+        <div className="flex items-start justify-between gap-8">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground text-lg font-bold">
-                A
-              </div>
-              <div>
-                <p className="text-lg font-bold leading-none">APM Project</p>
-                <p className="text-xs text-muted-foreground">
-                  Cirkulära möbler
-                </p>
-              </div>
-            </div>
+            <p className="text-xl font-bold tracking-tight">
+              {company.brandName}
+            </p>
+            <p className="text-[11px] uppercase tracking-widest text-neutral-500">
+              {company.tagline}
+            </p>
           </div>
-          <div className="text-right text-sm">
-            <p className="text-lg font-bold">
-              {quote.status === "order" ? "Order" : "Offert"} #{quote.quoteNumber}
-            </p>
-            <p className="text-muted-foreground">
-              Datum: {formatDate(quote.createdAt)}
-            </p>
-            {quote.validUntil && (
-              <p className="text-muted-foreground">
-                Giltig t.o.m. {formatDate(quote.validUntil)}
+          <div className="min-w-[240px]">
+            <p className="text-2xl font-semibold">{title}</p>
+            <table className="mt-2 w-full text-[12px]">
+              <tbody>
+                <tr>
+                  <td className="pr-4 text-neutral-600">
+                    {isOrder ? "Orderdatum" : "Offertdatum"}
+                  </td>
+                  <td className="text-right">
+                    {formatDate(
+                      isOrder ? (quote.orderDate ?? quote.createdAt) : quote.createdAt
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="pr-4 text-neutral-600">
+                    {isOrder ? "Ordernr" : "Offertnr"}
+                  </td>
+                  <td className="text-right">
+                    {isOrder
+                      ? (quote.orderNumber ?? quote.quoteNumber)
+                      : quote.quoteNumber}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mottagare till vänster, dokumentuppgifter till höger */}
+        <div className="mt-10 flex items-start justify-between gap-8">
+          <div>
+            <p className="font-semibold">{quote.customer.companyName}</p>
+            {/* Faller tillbaka på kundens fritextfält för äldre offerter som
+                saknar kopplad kontaktperson. */}
+            {quote.contact ? (
+              <p>{quote.contact.name}</p>
+            ) : (
+              quote.customer.contactPerson && (
+                <p>{quote.customer.contactPerson}</p>
+              )
+            )}
+            {quote.customer.address && <p>{quote.customer.address}</p>}
+            {(quote.customer.zipCode || quote.customer.city) && (
+              <p>
+                {[quote.customer.zipCode, quote.customer.city]
+                  .filter(Boolean)
+                  .join(" ")}
               </p>
             )}
           </div>
-        </div>
-
-        <hr className="my-6" />
-
-        {/* Customer address */}
-        <div className="text-sm">
-          <p className="font-semibold">{quote.customer.companyName}</p>
-          {quote.customer.contactPerson && (
-            <p>{quote.customer.contactPerson}</p>
-          )}
-          {quote.customer.address && <p>{quote.customer.address}</p>}
-          {(quote.customer.zipCode || quote.customer.city) && (
-            <p>
-              {[quote.customer.zipCode, quote.customer.city]
-                .filter(Boolean)
-                .join(" ")}
-            </p>
-          )}
-        </div>
-
-        {quote.project && (
-          <p className="mt-2 text-sm text-muted-foreground">
-            Projekt: {quote.project.name}
-          </p>
-        )}
-
-        {/* Items table - NO cost prices, NO margins */}
-        <div className="mt-8 overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left">
-                <th className="pb-2 pr-4 font-semibold">Beskrivning</th>
-                <th className="pb-2 pr-4 font-semibold">Enhet</th>
-                <th className="pb-2 pr-4 font-semibold text-right">Antal</th>
-                <th className="pb-2 pr-4 font-semibold text-right">A-pris</th>
-                <th className="pb-2 pr-4 font-semibold text-right">Rabatt</th>
-                <th className="pb-2 font-semibold text-right">Summa</th>
-              </tr>
-            </thead>
+          <table className="min-w-[240px] text-[12px]">
             <tbody>
-              {quote.items.map((item) => {
-                const lineTotal =
-                  Number(item.quantity) *
-                  Number(item.unitPrice) *
-                  (1 - Number(item.discount) / 100);
-                return (
-                  <tr key={item.id} className="border-b last:border-0">
-                    <td className="py-2 pr-4">{item.description}</td>
-                    <td className="py-2 pr-4">
-                      {item.unit === "m2" ? "m²" : item.unit}
-                    </td>
-                    <td className="py-2 pr-4 text-right">
-                      {Number(item.quantity)}
-                    </td>
-                    <td className="py-2 pr-4 text-right">
-                      {formatCurrency(Number(item.unitPrice))}
-                    </td>
-                    <td className="py-2 pr-4 text-right">
-                      {Number(item.discount) > 0
-                        ? `${Number(item.discount)}%`
-                        : "–"}
-                    </td>
-                    <td className="py-2 text-right font-medium">
-                      {formatCurrency(lineTotal)}
-                    </td>
-                  </tr>
-                );
-              })}
+              {meta.map((row) => (
+                <tr key={row.label}>
+                  <td className="pr-4 text-neutral-600">{row.label}</td>
+                  <td className="text-right">{row.value}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {/* Footer totals */}
-        <div className="mt-6 flex justify-end">
-          <div className="w-full max-w-xs space-y-1 text-sm">
-            <div className="flex justify-between">
-              <span>Summa</span>
-              <span className="font-medium">{formatCurrency(sumExMoms)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Moms 25%</span>
-              <span className="font-medium">{formatCurrency(moms)}</span>
-            </div>
-            <div className="flex justify-between border-t pt-2 text-base font-bold">
-              <span>Totalt</span>
-              <span>{formatCurrency(totalInkMoms)}</span>
-            </div>
+        {quote.project && (
+          <p className="mt-6 text-[12px] text-neutral-600">
+            Projekt: {quote.project.name}
+          </p>
+        )}
+
+        {/* Artikelrader */}
+        <table className="mt-8 w-full border-collapse text-[12px]">
+          <thead>
+            <tr className="border-b border-neutral-400 text-left align-bottom">
+              <th className="w-[64px] pb-1 pr-3 font-semibold">Artnr</th>
+              <th className="pb-1 pr-3 font-semibold">Benämning</th>
+              <th className="w-[64px] pb-1 pr-3 text-right font-semibold">
+                Antal
+              </th>
+              {isOrder && (
+                <th className="w-[64px] pb-1 pr-3 text-right font-semibold">
+                  Lev ant
+                </th>
+              )}
+              <th className="w-[52px] pb-1 pr-3 font-semibold">Enhet</th>
+              {hasDiscount && (
+                <th className="w-[56px] pb-1 pr-3 text-right font-semibold">
+                  Rabatt
+                </th>
+              )}
+              <th className="w-[88px] pb-1 pr-3 text-right font-semibold">
+                À-pris
+              </th>
+              <th className="w-[96px] pb-1 text-right font-semibold">Summa</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quote.items.map((item) => (
+              <tr key={item.id} className="align-top">
+                <td className="py-1.5 pr-3">{item.articleNumber ?? ""}</td>
+                <td className="py-1.5 pr-3">{item.description}</td>
+                <td className="py-1.5 pr-3 text-right">
+                  {formatAmount(Number(item.quantity))}
+                </td>
+                {isOrder && (
+                  <td className="py-1.5 pr-3 text-right">
+                    {formatAmount(Number(item.quantity))}
+                  </td>
+                )}
+                <td className="py-1.5 pr-3">
+                  {item.unit === "m2" ? "m²" : item.unit}
+                </td>
+                {hasDiscount && (
+                  <td className="py-1.5 pr-3 text-right">
+                    {Number(item.discount) > 0
+                      ? `${Number(item.discount)}%`
+                      : ""}
+                  </td>
+                )}
+                <td className="py-1.5 pr-3 text-right">
+                  {formatAmount(Number(item.unitPrice))}
+                </td>
+                <td className="py-1.5 text-right">
+                  {formatAmount(lineTotal(item))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Summering som en rad, likt Fortnox */}
+        <div className="mt-8 flex justify-end">
+          <table className="text-[12px]">
+            <thead>
+              <tr className="border-b border-neutral-400 text-right">
+                <th className="px-4 pb-1 font-semibold">Exkl. moms</th>
+                <th className="px-4 pb-1 font-semibold">Moms</th>
+                <th className="pl-4 pb-1 font-semibold">Totalt</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="text-right">
+                <td className="px-4 pt-1.5">{formatAmount(sumExMoms)}</td>
+                <td className="px-4 pt-1.5">{formatAmount(moms)}</td>
+                <td className="pl-4 pt-1.5 font-semibold">
+                  {formatAmount(totalIncMoms)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p className="mt-4 text-[11px] text-neutral-600">
+          Moms {defaultTerms.vatRate * 100}% {formatAmount(moms)} (
+          {formatAmount(sumExMoms)})
+        </p>
+
+        {(quote.deliveryTerms || quote.notes) && (
+          <div className="mt-8 space-y-3 text-[12px]">
+            {quote.deliveryTerms && (
+              <div>
+                <p className="font-semibold">Leveransvillkor</p>
+                <p className="whitespace-pre-wrap">{quote.deliveryTerms}</p>
+              </div>
+            )}
+            {quote.notes && (
+              <div>
+                <p className="font-semibold">Övrigt</p>
+                <p className="whitespace-pre-wrap">{quote.notes}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="mt-10 flex gap-10 text-[11px]">
+          <div>
+            <span className="text-neutral-600">IBAN</span>{" "}
+            <span>{company.iban}</span>
+          </div>
+          <div>
+            <span className="text-neutral-600">BIC</span>{" "}
+            <span>{company.bic}</span>
           </div>
         </div>
 
-        {/* Terms */}
-        {(quote.paymentTerms || quote.deliveryTerms) && (
-          <div className="mt-8 space-y-3 text-sm">
-            <h3 className="font-semibold">Villkor</h3>
-            {quote.paymentTerms && (
-              <div>
-                <p className="font-medium">Betalningsvillkor</p>
-                <p className="text-muted-foreground">{quote.paymentTerms}</p>
-              </div>
-            )}
-            {quote.deliveryTerms && (
-              <div>
-                <p className="font-medium">Leveransvillkor</p>
-                <p className="whitespace-pre-wrap text-muted-foreground">
-                  {quote.deliveryTerms}
-                </p>
-              </div>
-            )}
+        {/* Sidfot med fullständiga företagsuppgifter */}
+        <div className="mt-6 grid grid-cols-2 gap-6 border-t border-neutral-300 pt-4 text-[10px] leading-relaxed sm:grid-cols-4">
+          <div>
+            <p className="font-semibold text-neutral-600">Adress</p>
+            <p>{company.legalName}</p>
+            <p>{company.address}</p>
+            <p>{company.zipCity}</p>
+            <p>{company.country}</p>
           </div>
-        )}
-
-        {/* Notes */}
-        {quote.notes && (
-          <div className="mt-6 text-sm">
-            <h3 className="font-semibold">Anteckningar</h3>
-            <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
-              {quote.notes}
-            </p>
+          <div>
+            <p className="font-semibold text-neutral-600">Telefon</p>
+            <p>{company.phone}</p>
+            <p className="mt-2 font-semibold text-neutral-600">E-post</p>
+            <p>{company.email}</p>
+            <p className="mt-2 font-semibold text-neutral-600">Webbadress</p>
+            <p>{company.website}</p>
           </div>
-        )}
+          <div>
+            <p className="font-semibold text-neutral-600">Bankgiro</p>
+            <p>{company.bankgiro}</p>
+          </div>
+          <div>
+            <p className="font-semibold text-neutral-600">Organisationsnr</p>
+            <p>{company.orgNumber}</p>
+            <p className="mt-2 font-semibold text-neutral-600">Momsreg. nr</p>
+            <p>{company.vatNumber}</p>
+            <p className="mt-2">{company.fSkatt}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

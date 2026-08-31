@@ -11,6 +11,7 @@ import {
   Receipt,
   TrendingUp,
   ShoppingCart,
+  PackageCheck,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
     uninvoicedAgg,
     pipelineQuotes,
     orderQuotes,
+    completedDeliveries,
   ] = await Promise.all([
     prisma.project.count({ where: { status: "active" } }),
     prisma.project.findMany({
@@ -94,6 +96,18 @@ export default async function DashboardPage() {
     prisma.quote.findMany({
       where: { status: "order" },
       include: { items: { select: { quantity: true, unitPrice: true } } },
+    }),
+    // Genomförda leveranser — APM 2026-08-31: Linda ska kunna se direkt på
+    // startsidan vad som är levererat och därmed går att fakturera i Fortnox.
+    prisma.deliveryEvent.findMany({
+      where: { completedAt: { not: null } },
+      orderBy: { completedAt: "desc" },
+      include: {
+        project: { select: { id: true, name: true } },
+        customer: { select: { companyName: true } },
+        completedBy: { select: { name: true } },
+      },
+      take: 10,
     }),
   ]);
 
@@ -304,6 +318,50 @@ export default async function DashboardPage() {
           </Card>
         )}
       </div>
+
+      {completedDeliveries.length > 0 && (
+        <Card className="border-l-3 border-l-accent-teal">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PackageCheck className="h-4 w-4 text-accent-teal" />
+              Genomförda leveranser
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              render={<Link href="/leveransplanering" />}
+            >
+              Leveransplanering
+              <ArrowRight className="ml-1 h-3.5 w-3.5" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-3 text-xs text-muted-foreground">
+              Klara att fakturera i Fortnox.
+            </p>
+            <div className="space-y-2">
+              {completedDeliveries.map((d) => (
+                <Link
+                  key={d.id}
+                  href={`/projekt/${d.project.id}`}
+                  className="flex items-center justify-between rounded-md border p-3 text-sm transition-colors hover:bg-accent"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{d.project.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {d.customer.companyName}
+                      {d.completedBy?.name ? ` — ${d.completedBy.name}` : ""}
+                    </p>
+                  </div>
+                  <span className="ml-3 whitespace-nowrap text-xs text-muted-foreground">
+                    {d.completedAt ? formatDate(d.completedAt) : ""}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {recentProjects.length > 0 && (
         <Card className="border-l-3 border-l-accent-blue">

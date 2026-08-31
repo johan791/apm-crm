@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { AlertCircle, CheckCircle2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
@@ -69,6 +69,20 @@ export default async function LeveransplaneringPage({
     orderBy: [{ date: "asc" }, { time: "asc" }],
   });
 
+  // Passerade händelser som ingen har bekräftat som genomförda.
+  const awaitingConfirmation = await prisma.deliveryEvent.findMany({
+    where: {
+      date: { lt: today },
+      completedAt: null,
+    },
+    include: {
+      project: { select: { id: true, name: true } },
+      customer: { select: { companyName: true } },
+    },
+    orderBy: { date: "desc" },
+    take: 20,
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -104,6 +118,51 @@ export default async function LeveransplaneringPage({
         />
       )}
 
+      {/* Passerade händelser utan bekräftelse */}
+      {awaitingConfirmation.length > 0 && (
+        <Card className="border-l-3 border-l-accent-amber">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-accent-amber" />
+              Att bekräfta ({awaitingConfirmation.length})
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Datumet har passerat men ingen har markerat händelsen som
+              genomförd.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {awaitingConfirmation.map((event) => (
+                <Link
+                  key={event.id}
+                  href={`/leveransplanering/${event.id}/redigera`}
+                  className="flex flex-wrap items-center gap-2 sm:gap-3 rounded-lg border p-3 hover:bg-muted/50 transition-colors"
+                >
+                  <span
+                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                      eventTypeColors[event.type] ??
+                      "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {eventTypeLabels[event.type] ?? event.type}
+                  </span>
+                  <span className="text-sm font-medium">
+                    {formatDate(event.date)}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {event.project.name}
+                  </span>
+                  <span className="sm:ml-auto text-sm text-muted-foreground">
+                    {event.customer.companyName}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Upcoming events */}
       <Card>
         <CardHeader>
@@ -134,6 +193,12 @@ export default async function LeveransplaneringPage({
                     {formatDate(event.date)}
                     {event.time ? ` kl. ${event.time}` : ""}
                   </span>
+                  {event.completedAt && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-status-active">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      Genomförd
+                    </span>
+                  )}
                   <span className="text-sm text-muted-foreground">
                     {event.project.name}
                   </span>

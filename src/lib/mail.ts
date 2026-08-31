@@ -19,3 +19,25 @@ export async function sendReminderEmail(subject: string, html: string) {
     html,
   });
 }
+
+/** Escapar användarinmatning innan den interpoleras i mail-HTML. */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Gemensam ram runt alla notismail från CRM:et. */
+export function mailLayout(heading: string, body: string): string {
+  return `
+    <div style="font-family: sans-serif; max-width: 600px;">
+      <h1 style="color: #1a1a1a;">${escapeHtml(heading)}</h1>
+      ${body}
+      <hr style="margin-top: 24px; border: none; border-top: 1px solid #e5e5e5;" />
+      <p style="font-size: 12px; color: #888;">Detta mail skickades automatiskt från APM CRM.</p>
+    </div>
+  `;
+}

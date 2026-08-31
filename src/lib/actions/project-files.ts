@@ -2,8 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function addProjectFile(formData: FormData) {
+  await requireAuth();
   const projectId = formData.get("projectId") as string;
   const name = formData.get("name") as string;
   const url = formData.get("url") as string;
@@ -17,6 +19,7 @@ export async function addProjectFile(formData: FormData) {
 }
 
 export async function deleteProjectFile(id: string, projectId: string) {
+  await requireAuth();
   await prisma.projectFile.delete({ where: { id } });
   revalidatePath(`/projekt/${projectId}`);
 }

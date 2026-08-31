@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendReminderEmail } from "@/lib/mail";
+import { escapeHtml, mailLayout, sendReminderEmail } from "@/lib/mail";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,39 +12,85 @@ export async function GET(request: Request) {
   }
 
   const now = new Date();
-  const tomorrowStart = new Date(now);
-  tomorrowStart.setDate(now.getDate() + 1);
-  tomorrowStart.setHours(0, 0, 0, 0);
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+
+  const tomorrowStart = new Date(todayStart);
+  tomorrowStart.setDate(todayStart.getDate() + 1);
   const tomorrowEnd = new Date(tomorrowStart);
   tomorrowEnd.setDate(tomorrowStart.getDate() + 1);
 
-  const [deliveryEvents, activities] = await Promise.all([
-    prisma.deliveryEvent.findMany({
-      where: {
-        date: { gte: tomorrowStart, lt: tomorrowEnd },
-        reminderSent: false,
-      },
-      include: {
-        project: { select: { name: true } },
-        customer: { select: { companyName: true } },
-      },
-    }),
-    prisma.activity.findMany({
-      where: {
-        dueDate: { gte: tomorrowStart, lt: tomorrowEnd },
-        reminderSent: false,
-        status: "oppen",
-        createdAt: { lt: tomorrowStart },
-      },
-      include: {
-        customer: { select: { companyName: true } },
-        project: { select: { name: true } },
-        assignedTo: { select: { name: true } },
-      },
-    }),
-  ]);
+  // Offerter påminns 3 dagar innan de går ut, inte dagen innan. APM
+  // 2026-08-31: en dag räcker inte för att hinna reda ut ett problem med
+  // kunden medan offerten fortfarande gäller.
+  const QUOTE_REMINDER_DAYS = 3;
+  const quoteWindowStart = new Date(todayStart);
+  quoteWindowStart.setDate(todayStart.getDate() + QUOTE_REMINDER_DAYS);
+  const quoteWindowEnd = new Date(quoteWindowStart);
+  quoteWindowEnd.setDate(quoteWindowStart.getDate() + 1);
 
-  if (deliveryEvents.length === 0 && activities.length === 0) {
+  const [deliveryEvents, activities, expiringQuotes, unconfirmedDeliveries] =
+    await Promise.all([
+      prisma.deliveryEvent.findMany({
+        where: {
+          date: { gte: tomorrowStart, lt: tomorrowEnd },
+          reminderSent: false,
+        },
+        include: {
+          project: { select: { name: true } },
+          customer: { select: { companyName: true } },
+        },
+      }),
+      prisma.activity.findMany({
+        where: {
+          dueDate: { gte: tomorrowStart, lt: tomorrowEnd },
+          reminderSent: false,
+          status: "oppen",
+          createdAt: { lt: tomorrowStart },
+        },
+        include: {
+          customer: { select: { companyName: true } },
+          project: { select: { name: true } },
+          assignedTo: { select: { name: true } },
+        },
+      }),
+      // Offerter som går ut inom tre dagar. Fönstret börjar i dag i stället
+      // för exakt på dag 3, så att en offert med kortare varsel än så — eller
+      // en missad körning — inte hoppas över helt. expiryReminderSent gör att
+      // var och en ändå bara påminns om en gång.
+      prisma.quote.findMany({
+        where: {
+          validUntil: { gte: todayStart, lt: quoteWindowEnd },
+          expiryReminderSent: false,
+          status: { in: ["draft", "sent", "accepted"] },
+        },
+        include: {
+          customer: { select: { companyName: true } },
+          items: { select: { quantity: true, unitPrice: true, discount: true } },
+        },
+      }),
+      // Passerade leveranser som ingen bekräftat. Frågan tittar bakåt utan
+      // bortre gräns så att en missad körning inte tappar en händelse;
+      // followUpSent gör att var och en bara påminns om en gång.
+      prisma.deliveryEvent.findMany({
+        where: {
+          date: { lt: todayStart },
+          completedAt: null,
+          followUpSent: false,
+        },
+        include: {
+          project: { select: { name: true } },
+          customer: { select: { companyName: true } },
+        },
+      }),
+    ]);
+
+  if (
+    deliveryEvents.length === 0 &&
+    activities.length === 0 &&
+    expiringQuotes.length === 0 &&
+    unconfirmedDeliveries.length === 0
+  ) {
     return NextResponse.json({ message: "Inga påminnelser att skicka" });
   }
 
@@ -54,51 +100,86 @@ export async function GET(request: Request) {
   if (deliveryEvents.length > 0) {
     const rows = deliveryEvents
       .map((e) => {
-        const time = e.time ? ` kl ${e.time}` : "";
-        const addr = e.address ? ` — ${e.address}` : "";
-        return `<li><strong>${e.project.name}</strong> (${e.customer.companyName})${time}${addr}</li>`;
+        const time = e.time ? ` kl ${escapeHtml(e.time)}` : "";
+        const addr = e.address ? ` — ${escapeHtml(e.address)}` : "";
+        return `<li><strong>${escapeHtml(e.project.name)}</strong> (${escapeHtml(e.customer.companyName)})${time}${addr}</li>`;
       })
       .join("");
-    parts.push(
-      `<h2>Leveranser imorgon (${dateStr})</h2><ul>${rows}</ul>`
-    );
+    parts.push(`<h2>Leveranser imorgon (${dateStr})</h2><ul>${rows}</ul>`);
   }
 
   if (activities.length > 0) {
     const rows = activities
       .map((a) => {
-        const who = a.assignedTo?.name ? ` — ${a.assignedTo.name}` : "";
+        const who = a.assignedTo?.name ? ` — ${escapeHtml(a.assignedTo.name)}` : "";
         const ctx = a.customer?.companyName ?? a.project?.name ?? "";
-        const ctxStr = ctx ? ` (${ctx})` : "";
-        return `<li><strong>${a.title ?? a.description.slice(0, 80)}</strong>${ctxStr}${who}</li>`;
+        const ctxStr = ctx ? ` (${escapeHtml(ctx)})` : "";
+        const label = a.title ?? a.description.slice(0, 80);
+        return `<li><strong>${escapeHtml(label)}</strong>${ctxStr}${who}</li>`;
+      })
+      .join("");
+    parts.push(`<h2>Aktiviteter imorgon (${dateStr})</h2><ul>${rows}</ul>`);
+  }
+
+  if (expiringQuotes.length > 0) {
+    const rows = expiringQuotes
+      .map((q) => {
+        const value = q.items.reduce(
+          (sum, item) =>
+            sum +
+            Number(item.quantity) *
+              Number(item.unitPrice) *
+              (1 - Number(item.discount) / 100),
+          0
+        );
+        const valueStr = value.toLocaleString("sv-SE", {
+          maximumFractionDigits: 0,
+        });
+        // Fönstret spänner över flera dagar, så varje offert bär sitt eget
+        // utgångsdatum i stället för en gemensam rubrikdag.
+        const expiry = q.validUntil
+          ? ` — går ut ${q.validUntil.toLocaleDateString("sv-SE")}`
+          : "";
+        return `<li>Offert <strong>#${q.quoteNumber}</strong> — ${escapeHtml(q.customer.companyName)} (${valueStr} kr)${expiry}</li>`;
       })
       .join("");
     parts.push(
-      `<h2>Aktiviteter imorgon (${dateStr})</h2><ul>${rows}</ul>`
+      `<h2>Offerter som snart går ut</h2><ul>${rows}</ul><p>Dags att följa upp kunden.</p>`
     );
   }
 
-  const html = `
-    <div style="font-family: sans-serif; max-width: 600px;">
-      <h1 style="color: #1a1a1a;">Påminnelse från APM CRM</h1>
-      ${parts.join("")}
-      <hr style="margin-top: 24px; border: none; border-top: 1px solid #e5e5e5;" />
-      <p style="font-size: 12px; color: #888;">Detta mail skickades automatiskt från APM CRM.</p>
-    </div>
-  `;
+  if (unconfirmedDeliveries.length > 0) {
+    const rows = unconfirmedDeliveries
+      .map((e) => {
+        const dateLabel = e.date.toLocaleDateString("sv-SE");
+        return `<li><strong>${escapeHtml(e.project.name)}</strong> (${escapeHtml(e.customer.companyName)}) — planerad ${dateLabel}</li>`;
+      })
+      .join("");
+    parts.push(
+      `<h2>Bekräfta genomförd leverans</h2><ul>${rows}</ul><p>Markera händelsen som genomförd i leveransplaneringen.</p>`
+    );
+  }
+
+  const html = mailLayout("Påminnelse från APM CRM", parts.join(""));
 
   const subject = [
     deliveryEvents.length > 0
-      ? `${deliveryEvents.length} leverans${deliveryEvents.length > 1 ? "er" : ""}`
+      ? `${deliveryEvents.length} leverans${deliveryEvents.length > 1 ? "er" : ""} imorgon`
       : "",
     activities.length > 0
-      ? `${activities.length} aktivitet${activities.length > 1 ? "er" : ""}`
+      ? `${activities.length} aktivitet${activities.length > 1 ? "er" : ""} imorgon`
+      : "",
+    expiringQuotes.length > 0
+      ? `${expiringQuotes.length} offert${expiringQuotes.length > 1 ? "er" : ""} går ut`
+      : "",
+    unconfirmedDeliveries.length > 0
+      ? `${unconfirmedDeliveries.length} leverans${unconfirmedDeliveries.length > 1 ? "er" : ""} att bekräfta`
       : "",
   ]
     .filter(Boolean)
-    .join(" och ");
+    .join(", ");
 
-  await sendReminderEmail(`Imorgon: ${subject}`, html);
+  await sendReminderEmail(`APM CRM: ${subject}`, html);
 
   await Promise.all([
     deliveryEvents.length > 0
@@ -113,11 +194,25 @@ export async function GET(request: Request) {
           data: { reminderSent: true },
         })
       : null,
+    expiringQuotes.length > 0
+      ? prisma.quote.updateMany({
+          where: { id: { in: expiringQuotes.map((q) => q.id) } },
+          data: { expiryReminderSent: true },
+        })
+      : null,
+    unconfirmedDeliveries.length > 0
+      ? prisma.deliveryEvent.updateMany({
+          where: { id: { in: unconfirmedDeliveries.map((e) => e.id) } },
+          data: { followUpSent: true },
+        })
+      : null,
   ]);
 
   return NextResponse.json({
     sent: true,
     deliveryEvents: deliveryEvents.length,
     activities: activities.length,
+    expiringQuotes: expiringQuotes.length,
+    unconfirmedDeliveries: unconfirmedDeliveries.length,
   });
 }

@@ -52,16 +52,12 @@ export function QuoteStatusSelect({
             {s.label}
           </DropdownMenuItem>
         ))}
-        {currentStatus === "accepted" && (
-          <>
-            <DropdownMenuItem
-              onClick={() => convertToOrder(quoteId)}
-              className="font-medium text-primary"
-            >
-              Konvertera till order
-            </DropdownMenuItem>
-          </>
-        )}
+        <DropdownMenuItem
+          onClick={() => convertToOrder(quoteId)}
+          className="font-medium text-primary"
+        >
+          Gör till order
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

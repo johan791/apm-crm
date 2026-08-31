@@ -21,6 +21,7 @@ model User {
   assignedActivities   Activity[] @relation("AssignedActivities")
   invoiceBases         InvoiceBasis[]
   emailLogs            EmailLog[]
+  completedDeliveries  DeliveryEvent[] @relation("CompletedDeliveries")
   createdAt            DateTime   @default(now()) @map("created_at")
   updatedAt            DateTime   @updatedAt @map("updated_at")
 
@@ -55,17 +56,36 @@ model Customer {
 }
 
 model Contact {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   name       String
   role       String?
   email      String?
   phone      String?
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  customerId String   @map("customer_id")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String    @map("customer_id")
+  projects   Project[]
+  extraOn    ProjectContact[]
+  quotes     Quote[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@map("contacts")
+}
+
+// Ett projekt kan ha flera kontaktpersoner — APM 2026-08-31: "ibland fler
+// kontaktpersoner", t.ex. en som beställer och en som är på plats vid
+// leverans. Project.contact är fortsatt huvudkontakten; den här tabellen
+// lägger till övriga utan att röra det befintliga fältet.
+model ProjectContact {
+  id        String   @id @default(cuid())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String   @map("project_id")
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String   @map("contact_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([projectId, contactId])
+  @@map("project_contacts")
 }
 
 model Project {
@@ -79,6 +99,9 @@ model Project {
   onedriveFolderUrl String?          @map("onedrive_folder_url")
   customer          Customer         @relation(fields: [customerId], references: [id])
   customerId        String           @map("customer_id")
+  contact           Contact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  contactId         String?          @map("contact_id")
+  extraContacts     ProjectContact[]
   responsibleUser   User?            @relation(fields: [responsibleUserId], references: [id])
   responsibleUserId String?          @map("responsible_user_id")
   partners          ProjectPartner[]
@@ -161,29 +184,38 @@ model InvoiceBasisLine {
 }
 
 model Quote {
-  id            String      @id @default(cuid())
-  quoteNumber   Int         @unique @map("quote_number")
-  status        String      @default("draft")
-  customer      Customer    @relation(fields: [customerId], references: [id])
-  customerId    String      @map("customer_id")
-  project       Project?    @relation(fields: [projectId], references: [id])
-  projectId     String?     @map("project_id")
-  validUntil    DateTime?   @map("valid_until")
-  deliveryTerms String?     @map("delivery_terms")
-  paymentTerms  String?     @map("payment_terms")
-  notes         String?
-  items         QuoteItem[]
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  id                 String      @id @default(cuid())
+  quoteNumber        Int         @unique @map("quote_number")
+  status             String      @default("draft")
+  customer           Customer    @relation(fields: [customerId], references: [id])
+  customerId         String      @map("customer_id")
+  contact            Contact?    @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  contactId          String?     @map("contact_id")
+  project            Project?    @relation(fields: [projectId], references: [id])
+  projectId          String?     @map("project_id")
+  validUntil         DateTime?   @map("valid_until")
+  deliveryDate       DateTime?   @map("delivery_date")
+  deliveryTerms      String?     @map("delivery_terms")
+  paymentTerms       String?     @map("payment_terms")
+  ourReference       String?     @map("our_reference")
+  yourReference      String?     @map("your_reference")
+  notes              String?
+  orderNumber        Int?        @unique @map("order_number")
+  orderDate          DateTime?   @map("order_date")
+  expiryReminderSent Boolean     @default(false) @map("expiry_reminder_sent")
+  items              QuoteItem[]
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
 
   @@map("quotes")
 }
 
 model QuoteItem {
-  id          String  @id @default(cuid())
-  quote       Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  quoteId     String  @map("quote_id")
-  description String
+  id            String  @id @default(cuid())
+  quote         Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quoteId       String  @map("quote_id")
+  articleNumber String? @map("article_number")
+  description   String
   unit        String  @default("st")
   quantity    Decimal @db.Decimal(10, 2)
   unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
@@ -195,19 +227,24 @@ model QuoteItem {
 }
 
 model DeliveryEvent {
-  id           String   @id @default(cuid())
-  type         String
-  date         DateTime
-  time         String?
-  project      Project  @relation(fields: [projectId], references: [id])
-  projectId    String   @map("project_id")
-  customer     Customer @relation(fields: [customerId], references: [id])
-  customerId   String   @map("customer_id")
-  address      String?
-  notes        String?
-  reminderSent Boolean  @default(false) @map("reminder_sent")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                String    @id @default(cuid())
+  type              String
+  date              DateTime
+  time              String?
+  project           Project   @relation(fields: [projectId], references: [id])
+  projectId         String    @map("project_id")
+  customer          Customer  @relation(fields: [customerId], references: [id])
+  customerId        String    @map("customer_id")
+  address           String?
+  notes             String?
+  reminderSent      Boolean   @default(false) @map("reminder_sent")
+  completedAt       DateTime? @map("completed_at")
+  completedBy       User?     @relation("CompletedDeliveries", fields: [completedById], references: [id])
+  completedById     String?   @map("completed_by_id")
+  completionNote    String?   @map("completion_note")
+  followUpSent      Boolean   @default(false) @map("follow_up_sent")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   @@map("delivery_events")
 }

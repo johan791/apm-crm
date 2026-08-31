@@ -3,8 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function createTimeEntry(formData: FormData) {
+  await requireAuth();
   const projectId = formData.get("projectId") as string;
   const returnTo = (formData.get("returnTo") as string) || null;
 
@@ -25,6 +27,7 @@ export async function createTimeEntry(formData: FormData) {
 }
 
 export async function updateTimeEntry(id: string, formData: FormData) {
+  await requireAuth();
   const projectId = formData.get("projectId") as string;
   const returnTo = (formData.get("returnTo") as string) || null;
 
@@ -46,6 +49,7 @@ export async function updateTimeEntry(id: string, formData: FormData) {
 }
 
 export async function deleteTimeEntry(id: string, projectId: string, returnTo?: string) {
+  await requireAuth();
   await prisma.timeEntry.delete({ where: { id } });
 
   revalidatePath("/tidrapportering");

@@ -3,10 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { currentUserId } from "@/lib/current-user";
+import { requireUserId, requireAuth } from "@/lib/current-user";
 
 export async function createActivity(formData: FormData) {
-  const userId = await currentUserId();
+  const userId = await requireUserId();
   const customerId = (formData.get("customerId") as string) || null;
   const projectId = (formData.get("projectId") as string) || null;
   const unlinkedCustomerText =
@@ -38,6 +38,7 @@ export async function createActivity(formData: FormData) {
 }
 
 export async function updateActivityStatus(id: string, status: string) {
+  await requireAuth();
   const activity = await prisma.activity.update({
     where: { id },
     data: { status },
@@ -54,6 +55,7 @@ export async function updateActivityStatus(id: string, status: string) {
 }
 
 export async function deleteActivity(id: string) {
+  await requireAuth();
   const activity = await prisma.activity.delete({ where: { id } });
 
   if (activity.customerId) {

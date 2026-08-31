@@ -1,24 +1,16 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 
-export function middleware(request: NextRequest) {
-  const token =
-    request.cookies.get("authjs.session-token") ??
-    request.cookies.get("__Secure-authjs.session-token");
-
-  const isLoginPage = request.nextUrl.pathname === "/login";
-
-  if (!token && !isLoginPage) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (token && isLoginPage) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  return NextResponse.next();
-}
+// Använder next-auth:s middleware, som verifierar JWT-signaturen på
+// sessions-cookien via authorized-callbacken i auth.config.ts.
+// (Ersätter den tidigare kontrollen som bara kollade att cookien fanns.)
+// Default-export så att Next.js 16 entydigt känner igen den som en
+// middleware-funktion (en destrukturerad const-export gör inte det).
+export default NextAuth(authConfig).auth;
 
 export const config = {
-  matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
+  // Undanta hela /api från middleware — de skyddas var för sig i sina
+  // route handlers (auth() eller CRON_SECRET). Detta gör också att
+  // cron-endpointen inte längre redirectas till /login.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

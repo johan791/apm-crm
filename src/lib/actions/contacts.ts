@@ -2,8 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/current-user";
 
 export async function createContact(customerId: string, formData: FormData) {
+  await requireAuth();
   await prisma.contact.create({
     data: {
       customerId,
@@ -22,6 +24,7 @@ export async function updateContact(
   customerId: string,
   formData: FormData
 ) {
+  await requireAuth();
   await prisma.contact.update({
     where: { id },
     data: {
@@ -36,6 +39,7 @@ export async function updateContact(
 }
 
 export async function deleteContact(id: string, customerId: string) {
+  await requireAuth();
   await prisma.contact.delete({ where: { id } });
   revalidatePath(`/kunder/${customerId}`);
 }
