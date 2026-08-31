@@ -14,6 +14,8 @@ interface ProjectFormProps {
   defaultCustomerId?: string;
   users?: User[];
   contacts?: Contact[];
+  /** Övriga kontaktpersoner utöver huvudkontakten, som redan är kopplade. */
+  extraContactIds?: string[];
 }
 
 const statuses = [
@@ -35,12 +37,20 @@ export function ProjectForm({
   defaultCustomerId,
   users,
   contacts,
+  extraContactIds,
 }: ProjectFormProps) {
   const [customerId, setCustomerId] = useState(
     project?.customerId ?? defaultCustomerId ?? ""
   );
+  const [primaryContactId, setPrimaryContactId] = useState(
+    project?.contactId ?? ""
+  );
   const customerContacts = (contacts ?? []).filter(
     (c) => c.customerId === customerId
+  );
+  // Huvudkontakten ska inte kunna kryssas i som extra också.
+  const selectableExtras = customerContacts.filter(
+    (c) => c.id !== primaryContactId
   );
 
   return (
@@ -69,7 +79,12 @@ export function ProjectForm({
                 name="customerId"
                 required
                 value={customerId}
-                onChange={(e) => setCustomerId(e.target.value)}
+                onChange={(e) => {
+                  setCustomerId(e.target.value);
+                  // Kontakterna hör till kunden — byter man kund är de gamla
+                  // valen inte längre giltiga.
+                  setPrimaryContactId("");
+                }}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="" disabled>
@@ -85,12 +100,13 @@ export function ProjectForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contactId">Kontaktperson</Label>
+            <Label htmlFor="contactId">Huvudkontaktperson</Label>
             <select
               id="contactId"
               name="contactId"
               key={customerId}
-              defaultValue={project?.contactId ?? ""}
+              value={primaryContactId}
+              onChange={(e) => setPrimaryContactId(e.target.value)}
               disabled={!customerId}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -110,6 +126,41 @@ export function ProjectForm({
                   : "Kontaktpersonen hos kunden som projektet drivs mot."}
             </p>
           </div>
+
+          {selectableExtras.length > 0 && (
+            <div className="space-y-2">
+              <Label>Fler kontaktpersoner</Label>
+              <div className="space-y-2 rounded-md border p-3">
+                {selectableExtras.map((c) => (
+                  <label
+                    key={c.id}
+                    className="flex cursor-pointer items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      name="extraContactIds"
+                      value={c.id}
+                      defaultChecked={extraContactIds?.includes(c.id)}
+                      className="h-4 w-4 rounded border-input"
+                    />
+                    <span>
+                      {c.name}
+                      {c.role ? (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          – {c.role}
+                        </span>
+                      ) : null}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Till exempel den som beställt och den som är på plats vid
+                leverans. Huvudkontakten är den som står på projektkortet.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">Beskrivning</Label>

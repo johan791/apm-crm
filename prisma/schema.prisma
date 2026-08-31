@@ -64,11 +64,28 @@ model Contact {
   customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId String    @map("customer_id")
   projects   Project[]
+  extraOn    ProjectContact[]
   quotes     Quote[]
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@map("contacts")
+}
+
+// Ett projekt kan ha flera kontaktpersoner — APM 2026-08-31: "ibland fler
+// kontaktpersoner", t.ex. en som beställer och en som är på plats vid
+// leverans. Project.contact är fortsatt huvudkontakten; den här tabellen
+// lägger till övriga utan att röra det befintliga fältet.
+model ProjectContact {
+  id        String   @id @default(cuid())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String   @map("project_id")
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String   @map("contact_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([projectId, contactId])
+  @@map("project_contacts")
 }
 
 model Project {
@@ -84,6 +101,7 @@ model Project {
   customerId        String           @map("customer_id")
   contact           Contact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
   contactId         String?          @map("contact_id")
+  extraContacts     ProjectContact[]
   responsibleUser   User?            @relation(fields: [responsibleUserId], references: [id])
   responsibleUserId String?          @map("responsible_user_id")
   partners          ProjectPartner[]

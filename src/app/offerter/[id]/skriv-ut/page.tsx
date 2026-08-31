@@ -81,7 +81,12 @@ export default async function SkrivUtOffertPage({
           <ArrowLeft className="h-4 w-4" />
           Tillbaka
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">
+            Förhandsgranskning — så här ser {title.toLowerCase()}en ut utskriven
+          </span>
+          <PrintButton />
+        </div>
       </div>
 
       <div className="mx-auto max-w-[210mm] rounded-md border bg-white p-10 text-[13px] leading-snug text-black shadow-sm print:border-none print:p-0 print:shadow-none">

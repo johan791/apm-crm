@@ -13,7 +13,10 @@ export default async function RedigeraProjektPage({
 }) {
   const { id } = await params;
   const [project, customers, users, contacts] = await Promise.all([
-    prisma.project.findUnique({ where: { id } }),
+    prisma.project.findUnique({
+      where: { id },
+      include: { extraContacts: { select: { contactId: true } } },
+    }),
     prisma.customer.findMany({ orderBy: { companyName: "asc" } }),
     prisma.user.findMany({ orderBy: { name: "asc" } }),
     prisma.contact.findMany({ orderBy: { name: "asc" } }),
@@ -39,6 +42,7 @@ export default async function RedigeraProjektPage({
         project={project}
         users={users}
         contacts={contacts}
+        extraContactIds={project.extraContacts.map((ec) => ec.contactId)}
       />
     </div>
   );

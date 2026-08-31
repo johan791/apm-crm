@@ -63,3 +63,6 @@ next-env.d.ts
 CRM.xlsx
 Offert - *.pdf
 Orderbekr*.pdf
+
+# Databasbackuper (innehåller kunddata och lösenordshashar)
+backup/

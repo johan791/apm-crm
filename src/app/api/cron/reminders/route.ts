@@ -20,6 +20,15 @@ export async function GET(request: Request) {
   const tomorrowEnd = new Date(tomorrowStart);
   tomorrowEnd.setDate(tomorrowStart.getDate() + 1);
 
+  // Offerter påminns 3 dagar innan de går ut, inte dagen innan. APM
+  // 2026-08-31: en dag räcker inte för att hinna reda ut ett problem med
+  // kunden medan offerten fortfarande gäller.
+  const QUOTE_REMINDER_DAYS = 3;
+  const quoteWindowStart = new Date(todayStart);
+  quoteWindowStart.setDate(todayStart.getDate() + QUOTE_REMINDER_DAYS);
+  const quoteWindowEnd = new Date(quoteWindowStart);
+  quoteWindowEnd.setDate(quoteWindowStart.getDate() + 1);
+
   const [deliveryEvents, activities, expiringQuotes, unconfirmedDeliveries] =
     await Promise.all([
       prisma.deliveryEvent.findMany({
@@ -45,11 +54,13 @@ export async function GET(request: Request) {
           assignedTo: { select: { name: true } },
         },
       }),
-      // Offerter som går ut imorgon — påminnelsen ska hinna före utgången
-      // så att kunden kan följas upp medan offerten fortfarande gäller.
+      // Offerter som går ut inom tre dagar. Fönstret börjar i dag i stället
+      // för exakt på dag 3, så att en offert med kortare varsel än så — eller
+      // en missad körning — inte hoppas över helt. expiryReminderSent gör att
+      // var och en ändå bara påminns om en gång.
       prisma.quote.findMany({
         where: {
-          validUntil: { gte: tomorrowStart, lt: tomorrowEnd },
+          validUntil: { gte: todayStart, lt: quoteWindowEnd },
           expiryReminderSent: false,
           status: { in: ["draft", "sent", "accepted"] },
         },
@@ -124,11 +135,16 @@ export async function GET(request: Request) {
         const valueStr = value.toLocaleString("sv-SE", {
           maximumFractionDigits: 0,
         });
-        return `<li>Offert <strong>#${q.quoteNumber}</strong> — ${escapeHtml(q.customer.companyName)} (${valueStr} kr)</li>`;
+        // Fönstret spänner över flera dagar, så varje offert bär sitt eget
+        // utgångsdatum i stället för en gemensam rubrikdag.
+        const expiry = q.validUntil
+          ? ` — går ut ${q.validUntil.toLocaleDateString("sv-SE")}`
+          : "";
+        return `<li>Offert <strong>#${q.quoteNumber}</strong> — ${escapeHtml(q.customer.companyName)} (${valueStr} kr)${expiry}</li>`;
       })
       .join("");
     parts.push(
-      `<h2>Offerter som går ut ${dateStr}</h2><ul>${rows}</ul><p>Dags att följa upp kunden.</p>`
+      `<h2>Offerter som snart går ut</h2><ul>${rows}</ul><p>Dags att följa upp kunden.</p>`
     );
   }
 

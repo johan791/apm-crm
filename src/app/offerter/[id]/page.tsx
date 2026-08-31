@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, Printer, ShoppingCart, FolderPlus } from "lucide-react";
+import { ArrowLeft, Pencil, Eye, ShoppingCart, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -118,8 +118,8 @@ export default async function OffertDetaljPage({
             size="sm"
             render={<Link href={`/offerter/${quote.id}/skriv-ut`} />}
           >
-            <Printer className="mr-2 h-4 w-4" />
-            Skriv ut
+            <Eye className="mr-2 h-4 w-4" />
+            Förhandsgranska / PDF
           </Button>
           {quote.status !== "order" && (
             <form action={convertWithId}>

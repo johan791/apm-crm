@@ -41,6 +41,7 @@ export default async function ProjektDetaljPage({
     include: {
       customer: true,
       contact: true,
+      extraContacts: { include: { contact: true } },
       responsibleUser: true,
       partners: { include: { partner: true } },
       activities: {
@@ -166,6 +167,35 @@ export default async function ProjektDetaljPage({
                 )}
               </div>
             )}
+            {project.extraContacts.map(({ contact }) => (
+              <div
+                key={contact.id}
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
+              >
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Även:</span>
+                <span>
+                  {contact.name}
+                  {contact.role ? ` (${contact.role})` : ""}
+                </span>
+                {contact.email && (
+                  <a
+                    href={`mailto:${contact.email}`}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    {contact.email}
+                  </a>
+                )}
+                {contact.phone && (
+                  <a
+                    href={`tel:${contact.phone}`}
+                    className="text-muted-foreground hover:underline"
+                  >
+                    {contact.phone}
+                  </a>
+                )}
+              </div>
+            ))}
             {project.responsibleUser && (
               <div className="flex items-center gap-2 text-sm">
                 <User className="h-4 w-4 text-muted-foreground" />
