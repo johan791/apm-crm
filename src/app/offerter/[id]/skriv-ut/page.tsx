@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
@@ -93,12 +94,15 @@ export default async function SkrivUtOffertPage({
         {/* Sidhuvud: avsändare till vänster, dokumenttyp och nummer till höger */}
         <div className="flex items-start justify-between gap-8">
           <div>
-            <p className="text-xl font-bold tracking-tight">
-              {company.brandName}
-            </p>
-            <p className="text-[11px] uppercase tracking-widest text-neutral-500">
-              {company.tagline}
-            </p>
+            {/* Ordmärket ingår i logotypen, så inget företagsnamn intill. */}
+            <Image
+              src={company.logo.src}
+              alt={company.brandName}
+              width={company.logo.width}
+              height={company.logo.height}
+              priority
+              className="h-auto w-[180px]"
+            />
           </div>
           <div className="min-w-[240px]">
             <p className="text-2xl font-semibold">{title}</p>

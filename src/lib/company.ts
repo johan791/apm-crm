@@ -6,7 +6,16 @@
 export const company = {
   brandName: "APM Project",
   legalName: "Arbetsplatsmiljö i Väst AB",
-  tagline: "Cirkulära möbler",
+  /**
+   * APM:s egen logotyp. Ordmärket "APM PROJECT" ingår i bilden, så där den
+   * visas ska inget separat namn skrivas ut bredvid. Proportion 1920×603,
+   * alltså ungefär 3,2:1 — sätt bredden och låt höjden följa med.
+   */
+  logo: {
+    src: "/logga-apm.png",
+    width: 1920,
+    height: 603,
+  },
   address: "Södra Larmgatan 2",
   zipCity: "411 16 Göteborg",
   country: "Sverige",

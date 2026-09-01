@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -17,6 +18,7 @@ import {
   Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { company } from "@/lib/company";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -117,14 +119,17 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 function SidebarHeader() {
   return (
     <div className="flex h-14 items-center mb-2 px-4">
-      <Link href="/" className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-          A
-        </div>
-        <div>
-          <p className="text-sm font-semibold leading-none">APM Project</p>
-          <p className="text-xs text-muted-foreground">Projekthub</p>
-        </div>
+      <Link href="/" className="flex items-center gap-3">
+        {/* Ordmärket ingår i logotypen — därför bara "Projekthub" intill. */}
+        <Image
+          src={company.logo.src}
+          alt={company.brandName}
+          width={company.logo.width}
+          height={company.logo.height}
+          priority
+          className="h-auto w-[120px] dark:invert"
+        />
+        <p className="text-xs text-muted-foreground">Projekthub</p>
       </Link>
     </div>
   );

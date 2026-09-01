@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { company } from "@/lib/company";
 import { formatDate, formatHours } from "@/lib/format";
 import { PrintButton } from "./print-button";
 import { DateFilter } from "./date-filter";
@@ -71,17 +73,15 @@ export default async function TidrapportUtskriftPage({
         {/* Header with logo */}
         <div className="flex items-start justify-between">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground text-lg font-bold">
-                A
-              </div>
-              <div>
-                <p className="text-lg font-bold leading-none">APM Project</p>
-                <p className="text-xs text-muted-foreground">
-                  Cirkulära möbler
-                </p>
-              </div>
-            </div>
+            {/* Ordmärket ingår i logotypen, så inget företagsnamn intill. */}
+            <Image
+              src={company.logo.src}
+              alt={company.brandName}
+              width={company.logo.width}
+              height={company.logo.height}
+              priority
+              className="h-auto w-[160px]"
+            />
           </div>
           <div className="text-right text-sm">
             <p className="text-lg font-bold">Tidrapport</p>
