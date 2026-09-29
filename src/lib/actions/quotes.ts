@@ -76,6 +76,12 @@ export async function updateQuote(id: string, formData: FormData) {
   redirect(`/offerter/${id}`);
 }
 
+// Negativa värden är tillåtna (avdragsrader), bara trasiga värden blir 0.
+function toNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export async function saveQuoteItems(quoteId: string, formData: FormData) {
   await requireAuth();
   const itemsJson = formData.get("items") as string;
@@ -99,10 +105,10 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
           articleNumber: item.articleNumber || null,
           description: item.description,
           unit: item.unit,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          costPrice: item.costPrice,
-          discount: item.discount,
+          quantity: toNumber(item.quantity),
+          unitPrice: toNumber(item.unitPrice),
+          costPrice: toNumber(item.costPrice),
+          discount: toNumber(item.discount),
           sortOrder: item.sortOrder,
         },
       })

@@ -12,10 +12,10 @@ interface QuoteItem {
   articleNumber: string;
   description: string;
   unit: string;
-  quantity: number;
-  unitPrice: number;
-  costPrice: number;
-  discount: number;
+  quantity: string;
+  unitPrice: string;
+  costPrice: string;
+  discount: string;
 }
 
 interface QuoteItemsEditorProps {
@@ -45,8 +45,13 @@ function generateId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+function num(value: string) {
+  const parsed = parseFloat(value.replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function rowTotal(item: QuoteItem) {
-  return item.quantity * item.unitPrice * (1 - item.discount / 100);
+  return num(item.quantity) * num(item.unitPrice) * (1 - num(item.discount) / 100);
 }
 
 export function QuoteItemsEditor({
@@ -60,10 +65,10 @@ export function QuoteItemsEditor({
           articleNumber: item.articleNumber,
           description: item.description,
           unit: item.unit,
-          quantity: Number(item.quantity),
-          unitPrice: Number(item.unitPrice),
-          costPrice: Number(item.costPrice),
-          discount: Number(item.discount),
+          quantity: String(Number(item.quantity)),
+          unitPrice: String(Number(item.unitPrice)),
+          costPrice: String(Number(item.costPrice)),
+          discount: String(Number(item.discount)),
         }))
       : [
           {
@@ -71,15 +76,15 @@ export function QuoteItemsEditor({
             articleNumber: "",
             description: "",
             unit: "st",
-            quantity: 1,
-            unitPrice: 0,
-            costPrice: 0,
-            discount: 0,
+            quantity: "1",
+            unitPrice: "0",
+            costPrice: "0",
+            discount: "0",
           },
         ]
   );
 
-  function updateItem(tempId: string, field: keyof QuoteItem, value: string | number) {
+  function updateItem(tempId: string, field: keyof QuoteItem, value: string) {
     setItems((prev) =>
       prev.map((item) =>
         item.tempId === tempId ? { ...item, [field]: value } : item
@@ -95,10 +100,10 @@ export function QuoteItemsEditor({
         articleNumber: "",
         description: "",
         unit: "st",
-        quantity: 1,
-        unitPrice: 0,
-        costPrice: 0,
-        discount: 0,
+        quantity: "1",
+        unitPrice: "0",
+        costPrice: "0",
+        discount: "0",
       },
     ]);
   }
@@ -112,21 +117,21 @@ export function QuoteItemsEditor({
   const totalInkMoms = sumExMoms + moms;
 
   const totalCost = items.reduce(
-    (sum, item) => sum + item.quantity * item.costPrice,
+    (sum, item) => sum + num(item.quantity) * num(item.costPrice),
     0
   );
   const totalSales = sumExMoms;
   const marginKr = totalSales - totalCost;
-  const marginPercent = totalSales > 0 ? (marginKr / totalSales) * 100 : 0;
+  const marginPercent = totalSales !== 0 ? (marginKr / totalSales) * 100 : 0;
 
   const itemsForSubmit = items.map((item, index) => ({
     articleNumber: item.articleNumber,
     description: item.description,
     unit: item.unit,
-    quantity: item.quantity,
-    unitPrice: item.unitPrice,
-    costPrice: item.costPrice,
-    discount: item.discount,
+    quantity: num(item.quantity),
+    unitPrice: num(item.unitPrice),
+    costPrice: num(item.costPrice),
+    discount: num(item.discount),
     sortOrder: index,
   }));
 
@@ -203,48 +208,33 @@ export function QuoteItemsEditor({
                       </td>
                       <td className="py-2 pr-2">
                         <input
-                          type="number"
-                          step="1"
-                          min="0"
+                          type="text"
+                          inputMode="decimal"
                           value={item.quantity}
                           onChange={(e) =>
-                            updateItem(
-                              item.tempId,
-                              "quantity",
-                              parseFloat(e.target.value) || 0
-                            )
+                            updateItem(item.tempId, "quantity", e.target.value)
                           }
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </td>
                       <td className="py-2 pr-2">
                         <input
-                          type="number"
-                          step="1"
-                          min="0"
+                          type="text"
+                          inputMode="decimal"
                           value={item.unitPrice}
                           onChange={(e) =>
-                            updateItem(
-                              item.tempId,
-                              "unitPrice",
-                              parseFloat(e.target.value) || 0
-                            )
+                            updateItem(item.tempId, "unitPrice", e.target.value)
                           }
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </td>
                       <td className="py-2 pr-2">
                         <input
-                          type="number"
-                          step="1"
-                          min="0"
+                          type="text"
+                          inputMode="decimal"
                           value={item.costPrice}
                           onChange={(e) =>
-                            updateItem(
-                              item.tempId,
-                              "costPrice",
-                              parseFloat(e.target.value) || 0
-                            )
+                            updateItem(item.tempId, "costPrice", e.target.value)
                           }
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
@@ -257,11 +247,7 @@ export function QuoteItemsEditor({
                           max="100"
                           value={item.discount}
                           onChange={(e) =>
-                            updateItem(
-                              item.tempId,
-                              "discount",
-                              parseFloat(e.target.value) || 0
-                            )
+                            updateItem(item.tempId, "discount", e.target.value)
                           }
                           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm text-right focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
@@ -285,6 +271,11 @@ export function QuoteItemsEditor({
                 </tbody>
               </table>
             </div>
+
+            <p className="mt-2 text-xs text-muted-foreground">
+              Tips: skriv minustecken i Antal eller A-pris för en avdragsrad, t.ex.
+              inbyte eller kompensation.
+            </p>
 
             <Button
               type="button"

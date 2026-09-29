@@ -25,7 +25,7 @@ export async function createInvoiceBasis(formData: FormData) {
     const unit = (formData.get(`lines[${i}].unit`) as string) || "st";
     const qty = parseFloat(formData.get(`lines[${i}].quantity`) as string) || 0;
     const price = parseFloat(formData.get(`lines[${i}].unitPrice`) as string) || 0;
-    if (desc && qty > 0) {
+    if (desc && qty !== 0) {
       lines.push({ description: desc, unit, quantity: qty, unitPrice: price, sortOrder: i });
     }
   }
