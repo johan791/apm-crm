@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QuoteForm } from "@/components/quotes/quote-form";
 import { QuoteItemsEditor } from "@/components/quotes/quote-items-editor";
+import { SupplierQuoteImport } from "@/components/quotes/supplier-quote-import";
 import { updateQuote } from "@/lib/actions/quotes";
 import { prisma } from "@/lib/prisma";
 
@@ -13,7 +14,7 @@ export default async function RedigeraOffertPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [quote, customers, projects, contacts, users] = await Promise.all([
+  const [quote, customers, projects, contacts, users, partners] = await Promise.all([
     prisma.quote.findUnique({
       where: { id },
       include: { items: { orderBy: { sortOrder: "asc" } } },
@@ -22,6 +23,10 @@ export default async function RedigeraOffertPage({
     prisma.project.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
     prisma.contact.findMany({ orderBy: { name: "asc" } }),
     prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    prisma.partner.findMany({
+      select: { id: true, companyName: true, defaultMarkup: true },
+      orderBy: { companyName: "asc" },
+    }),
   ]);
 
   if (!quote) notFound();
@@ -38,6 +43,9 @@ export default async function RedigeraOffertPage({
     costPrice: Number(item.costPrice),
     discount: Number(item.discount),
     sortOrder: item.sortOrder,
+    sourcePartnerId: item.sourcePartnerId,
+    sourceQuoteRef: item.sourceQuoteRef,
+    sourceArticleNumber: item.sourceArticleNumber,
   }));
 
   return (
@@ -60,7 +68,24 @@ export default async function RedigeraOffertPage({
         users={users}
       />
 
-      <QuoteItemsEditor quoteId={quote.id} initialItems={initialItems} />
+      <SupplierQuoteImport
+        quoteId={quote.id}
+        partners={partners.map((partner) => ({
+          id: partner.id,
+          companyName: partner.companyName,
+          defaultMarkup:
+            partner.defaultMarkup === null ? null : Number(partner.defaultMarkup),
+        }))}
+      />
+
+      {/* Nyckeln monterar om editorn när raderna ändrats på servern, t.ex.
+          efter en inläsning av leverantörsoffert. Utan den visar editorn kvar
+          sitt gamla tillstånd och nästa sparning skulle radera de nya raderna. */}
+      <QuoteItemsEditor
+        key={initialItems.map((item) => item.id).join("-") || "tom"}
+        quoteId={quote.id}
+        initialItems={initialItems}
+      />
     </div>
   );
 }

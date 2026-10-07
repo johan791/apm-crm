@@ -16,6 +16,11 @@ interface QuoteItem {
   unitPrice: string;
   costPrice: string;
   discount: string;
+  // Ursprung från en inläst leverantörsoffert. Visas inte här, men måste följa
+  // med i sparningen eftersom den ersätter alla rader.
+  sourcePartnerId: string | null;
+  sourceQuoteRef: string | null;
+  sourceArticleNumber: string | null;
 }
 
 interface QuoteItemsEditorProps {
@@ -30,6 +35,9 @@ interface QuoteItemsEditorProps {
     costPrice: number;
     discount: number;
     sortOrder: number;
+    sourcePartnerId: string | null;
+    sourceQuoteRef: string | null;
+    sourceArticleNumber: string | null;
   }>;
 }
 
@@ -69,6 +77,9 @@ export function QuoteItemsEditor({
           unitPrice: String(Number(item.unitPrice)),
           costPrice: String(Number(item.costPrice)),
           discount: String(Number(item.discount)),
+          sourcePartnerId: item.sourcePartnerId,
+          sourceQuoteRef: item.sourceQuoteRef,
+          sourceArticleNumber: item.sourceArticleNumber,
         }))
       : [
           {
@@ -80,6 +91,9 @@ export function QuoteItemsEditor({
             unitPrice: "0",
             costPrice: "0",
             discount: "0",
+            sourcePartnerId: null,
+            sourceQuoteRef: null,
+            sourceArticleNumber: null,
           },
         ]
   );
@@ -104,6 +118,9 @@ export function QuoteItemsEditor({
         unitPrice: "0",
         costPrice: "0",
         discount: "0",
+        sourcePartnerId: null,
+        sourceQuoteRef: null,
+        sourceArticleNumber: null,
       },
     ]);
   }
@@ -133,6 +150,9 @@ export function QuoteItemsEditor({
     costPrice: num(item.costPrice),
     discount: num(item.discount),
     sortOrder: index,
+    sourcePartnerId: item.sourcePartnerId,
+    sourceQuoteRef: item.sourceQuoteRef,
+    sourceArticleNumber: item.sourceArticleNumber,
   }));
 
   const actionWithId = saveQuoteItems.bind(null, quoteId);
