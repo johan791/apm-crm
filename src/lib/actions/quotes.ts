@@ -94,6 +94,9 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
     costPrice: number;
     discount: number;
     sortOrder: number;
+    sourcePartnerId?: string | null;
+    sourceQuoteRef?: string | null;
+    sourceArticleNumber?: string | null;
   }>;
 
   await prisma.$transaction([
@@ -110,6 +113,11 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
           costPrice: toNumber(item.costPrice),
           discount: toNumber(item.discount),
           sortOrder: item.sortOrder,
+          // Raderna skrivs om från grunden vid varje sparning, så ursprunget
+          // från en inläst leverantörsoffert måste skrivas tillbaka.
+          sourcePartnerId: item.sourcePartnerId ?? null,
+          sourceQuoteRef: item.sourceQuoteRef ?? null,
+          sourceArticleNumber: item.sourceArticleNumber ?? null,
         },
       })
     ),

@@ -223,6 +223,13 @@ model QuoteItem {
   discount    Decimal @default(0) @db.Decimal(5, 2)
   sortOrder   Int     @default(0) @map("sort_order")
 
+  // Ursprung när raden lästs in från en leverantörsoffert. Visas internt,
+  // aldrig på utskriften till kund.
+  sourcePartner        Partner? @relation(fields: [sourcePartnerId], references: [id], onDelete: SetNull)
+  sourcePartnerId      String?  @map("source_partner_id")
+  sourceQuoteRef       String?  @map("source_quote_ref")
+  sourceArticleNumber  String?  @map("source_article_number")
+
   @@map("quote_items")
 }
 
@@ -257,7 +264,10 @@ model Partner {
   phone         String?
   category      String
   notes         String?
+  // Senast använda påslag vid inläsning av leverantörsoffert, i procent.
+  defaultMarkup Decimal?         @map("default_markup") @db.Decimal(5, 2)
   projects      ProjectPartner[]
+  quoteItems    QuoteItem[]
   createdAt     DateTime         @default(now()) @map("created_at")
   updatedAt     DateTime         @updatedAt @map("updated_at")
 

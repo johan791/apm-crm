@@ -30,7 +30,10 @@ export default async function OffertDetaljPage({
       customer: true,
       contact: true,
       project: true,
-      items: { orderBy: { sortOrder: "asc" } },
+      items: {
+        orderBy: { sortOrder: "asc" },
+        include: { sourcePartner: { select: { companyName: true } } },
+      },
     },
   });
 
@@ -257,7 +260,17 @@ export default async function OffertDetaljPage({
                         <TableCell className="text-muted-foreground">
                           {item.articleNumber ?? "–"}
                         </TableCell>
-                        <TableCell>{item.description}</TableCell>
+                        <TableCell>
+                          {item.description}
+                          {item.sourcePartner && (
+                            <span className="mt-0.5 block text-xs text-muted-foreground">
+                              Från {item.sourcePartner.companyName}
+                              {item.sourceQuoteRef
+                                ? ` – offert ${item.sourceQuoteRef}`
+                                : ""}
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell>{item.unit === "m2" ? "m²" : item.unit}</TableCell>
                         <TableCell className="text-right">
                           {Number(item.quantity)}

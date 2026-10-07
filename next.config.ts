@@ -34,6 +34,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["bcryptjs"],
+  experimental: {
+    // Leverantörsoffert laddas upp via en server action; standardgränsen på
+    // 1 MB räcker inte för bildtunga PDF:er.
+    serverActions: { bodySizeLimit: "5mb" },
+  },
   poweredByHeader: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
