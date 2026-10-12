@@ -46,6 +46,7 @@ export default async function RedigeraOffertPage({
     sourcePartnerId: item.sourcePartnerId,
     sourceQuoteRef: item.sourceQuoteRef,
     sourceArticleNumber: item.sourceArticleNumber,
+    createdById: item.createdById,
   }));
 
   return (
