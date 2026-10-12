@@ -52,6 +52,7 @@ Regler:
 - Hoppa över fritext som inte är en artikelrad: inledande noteringar, villkorstexter, beskrivningar av bilder, texter om leveransvillkor och allt i sidhuvud och sidfot.
 - Hör en beskrivning ihop över flera rader, slå ihop den till en enda beskrivning.
 - Finns en rabattkolumn i procent, ange den i discountPercent och lämna unitPrice som priset före rabatt. Finns ingen rabatt, ange 0.
+- Vissa leverantörer lägger en avgift i summeringsraden längst ner i stället för i tabellen, till exempel en fraktkostnad bredvid "Exkl. moms". Lägg till en sådan avgift som en egen rad med antal 1 och avgiften som à-pris, så att raderna summerar till leverantörens totalsumma. Gör det bara om avgiften inte redan finns som en artikelrad.
 - Tal skrivs i olika format ("1 870,00", "2.350:-", "-1.171:-"). Returnera dem som vanliga tal, där decimaltecknet är punkt.
 - Hitta aldrig på rader, priser eller artikelnummer. Saknas ett värde, utelämna det enligt schemat.
 - statedTotalExVat ska vara den totalsumma exklusive moms som leverantören själv skrivit ut på offerten, inte din egen uträkning.`;
