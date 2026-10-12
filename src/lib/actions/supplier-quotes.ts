@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/current-user";
+import { requireAuth, requireUserId } from "@/lib/current-user";
 import {
   extractSupplierQuote,
   checkTotal,
@@ -98,7 +98,7 @@ export async function appendSupplierQuoteItems(
     items: ItemToAppend[];
   }
 ) {
-  await requireAuth();
+  const userId = await requireUserId();
 
   if (input.items.length === 0) return;
 
@@ -133,9 +133,14 @@ export async function appendSupplierQuoteItems(
           sourcePartnerId: input.partnerId,
           sourceQuoteRef: quoteRef,
           sourceArticleNumber: item.supplierArticleNumber,
+          createdById: userId,
         },
       })
     ),
+    prisma.quote.update({
+      where: { id: quoteId },
+      data: { updatedById: userId },
+    }),
     prisma.partner.update({
       where: { id: input.partnerId },
       data: { defaultMarkup: input.markupPercent },

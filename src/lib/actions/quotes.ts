@@ -3,10 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAuth } from "@/lib/current-user";
+import { requireAuth, requireUserId } from "@/lib/current-user";
 
 export async function createQuote(formData: FormData) {
-  await requireAuth();
+  const userId = await requireUserId();
   const lastQuote = await prisma.quote.findFirst({
     orderBy: { quoteNumber: "desc" },
   });
@@ -29,6 +29,8 @@ export async function createQuote(formData: FormData) {
       ourReference: (formData.get("ourReference") as string) || null,
       yourReference: (formData.get("yourReference") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      createdById: userId,
+      updatedById: userId,
     },
   });
 
@@ -38,7 +40,7 @@ export async function createQuote(formData: FormData) {
 }
 
 export async function updateQuote(id: string, formData: FormData) {
-  await requireAuth();
+  const userId = await requireUserId();
   const validUntil = formData.get("validUntil") as string;
   const deliveryDate = formData.get("deliveryDate") as string;
   const projectId = formData.get("projectId") as string;
@@ -66,6 +68,7 @@ export async function updateQuote(id: string, formData: FormData) {
       ourReference: (formData.get("ourReference") as string) || null,
       yourReference: (formData.get("yourReference") as string) || null,
       notes: (formData.get("notes") as string) || null,
+      updatedById: userId,
       ...(validUntilChanged ? { expiryReminderSent: false } : {}),
     },
   });
@@ -83,7 +86,7 @@ function toNumber(value: unknown) {
 }
 
 export async function saveQuoteItems(quoteId: string, formData: FormData) {
-  await requireAuth();
+  const userId = await requireUserId();
   const itemsJson = formData.get("items") as string;
   const items = JSON.parse(itemsJson) as Array<{
     articleNumber: string;
@@ -97,6 +100,7 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
     sourcePartnerId?: string | null;
     sourceQuoteRef?: string | null;
     sourceArticleNumber?: string | null;
+    createdById?: string | null;
   }>;
 
   await prisma.$transaction([
@@ -118,9 +122,16 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
           sourcePartnerId: item.sourcePartnerId ?? null,
           sourceQuoteRef: item.sourceQuoteRef ?? null,
           sourceArticleNumber: item.sourceArticleNumber ?? null,
+          // Befintliga rader behåller sin ursprungliga upphovsperson, nya
+          // rader stämplas med den som sparar.
+          createdById: item.createdById ?? userId,
         },
       })
     ),
+    prisma.quote.update({
+      where: { id: quoteId },
+      data: { updatedById: userId },
+    }),
   ]);
 
   revalidatePath(`/offerter/${quoteId}`);
@@ -130,8 +141,11 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
 }
 
 export async function updateQuoteStatus(id: string, status: string) {
-  await requireAuth();
-  await prisma.quote.update({ where: { id }, data: { status } });
+  const userId = await requireUserId();
+  await prisma.quote.update({
+    where: { id },
+    data: { status, updatedById: userId },
+  });
   revalidatePath(`/offerter/${id}`);
   revalidatePath("/offerter");
   revalidatePath("/");
@@ -143,7 +157,7 @@ export async function updateQuoteStatus(id: string, status: string) {
  * finns kvar som referens på orderbekräftelsen.
  */
 export async function convertToOrder(id: string) {
-  await requireAuth();
+  const userId = await requireUserId();
 
   const quote = await prisma.quote.findUnique({
     where: { id },
@@ -153,7 +167,10 @@ export async function convertToOrder(id: string) {
 
   // Redan konverterad – behåll ordernumret, sätt bara status.
   if (quote.orderNumber !== null) {
-    await prisma.quote.update({ where: { id }, data: { status: "order" } });
+    await prisma.quote.update({
+      where: { id },
+      data: { status: "order", updatedById: userId },
+    });
   } else {
     const lastOrder = await prisma.quote.findFirst({
       where: { orderNumber: { not: null } },
@@ -166,6 +183,7 @@ export async function convertToOrder(id: string) {
         status: "order",
         orderNumber: (lastOrder?.orderNumber ?? 1000) + 1,
         orderDate: new Date(),
+        updatedById: userId,
       },
     });
   }

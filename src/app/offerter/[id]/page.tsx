@@ -30,9 +30,14 @@ export default async function OffertDetaljPage({
       customer: true,
       contact: true,
       project: true,
+      createdBy: { select: { name: true } },
+      updatedBy: { select: { name: true } },
       items: {
         orderBy: { sortOrder: "asc" },
-        include: { sourcePartner: { select: { companyName: true } } },
+        include: {
+          sourcePartner: { select: { companyName: true } },
+          createdBy: { select: { name: true } },
+        },
       },
     },
   });
@@ -95,7 +100,14 @@ export default async function OffertDetaljPage({
                 {quote.project.name}
               </Link>
             )}
-            <span>Skapad {formatDate(quote.createdAt)}</span>
+            <span>
+              Skapad {formatDate(quote.createdAt)}
+              {quote.createdBy ? ` av ${quote.createdBy.name}` : ""}
+            </span>
+            <span>
+              Ändrad {formatDate(quote.updatedAt)}
+              {quote.updatedBy ? ` av ${quote.updatedBy.name}` : ""}
+            </span>
             {quote.status === "order" && quote.orderNumber && (
               <span>Offertnr {quote.quoteNumber}</span>
             )}
@@ -262,11 +274,18 @@ export default async function OffertDetaljPage({
                         </TableCell>
                         <TableCell>
                           {item.description}
-                          {item.sourcePartner && (
+                          {(item.sourcePartner || item.createdBy) && (
                             <span className="mt-0.5 block text-xs text-muted-foreground">
-                              Från {item.sourcePartner.companyName}
-                              {item.sourceQuoteRef
-                                ? ` – offert ${item.sourceQuoteRef}`
+                              {item.sourcePartner
+                                ? `Från ${item.sourcePartner.companyName}${
+                                    item.sourceQuoteRef
+                                      ? ` – offert ${item.sourceQuoteRef}`
+                                      : ""
+                                  }`
+                                : ""}
+                              {item.sourcePartner && item.createdBy ? " · " : ""}
+                              {item.createdBy
+                                ? `Inlagd av ${item.createdBy.name}`
                                 : ""}
                             </span>
                           )}

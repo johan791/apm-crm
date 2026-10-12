@@ -21,6 +21,7 @@ interface QuoteItem {
   sourcePartnerId: string | null;
   sourceQuoteRef: string | null;
   sourceArticleNumber: string | null;
+  createdById: string | null;
 }
 
 interface QuoteItemsEditorProps {
@@ -38,6 +39,7 @@ interface QuoteItemsEditorProps {
     sourcePartnerId: string | null;
     sourceQuoteRef: string | null;
     sourceArticleNumber: string | null;
+    createdById: string | null;
   }>;
 }
 
@@ -80,6 +82,7 @@ export function QuoteItemsEditor({
           sourcePartnerId: item.sourcePartnerId,
           sourceQuoteRef: item.sourceQuoteRef,
           sourceArticleNumber: item.sourceArticleNumber,
+          createdById: item.createdById,
         }))
       : [
           {
@@ -94,6 +97,7 @@ export function QuoteItemsEditor({
             sourcePartnerId: null,
             sourceQuoteRef: null,
             sourceArticleNumber: null,
+            createdById: null,
           },
         ]
   );
@@ -121,6 +125,7 @@ export function QuoteItemsEditor({
         sourcePartnerId: null,
         sourceQuoteRef: null,
         sourceArticleNumber: null,
+        createdById: null,
       },
     ]);
   }
@@ -153,6 +158,7 @@ export function QuoteItemsEditor({
     sourcePartnerId: item.sourcePartnerId,
     sourceQuoteRef: item.sourceQuoteRef,
     sourceArticleNumber: item.sourceArticleNumber,
+    createdById: item.createdById,
   }));
 
   const actionWithId = saveQuoteItems.bind(null, quoteId);

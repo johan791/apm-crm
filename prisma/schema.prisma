@@ -22,6 +22,9 @@ model User {
   invoiceBases         InvoiceBasis[]
   emailLogs            EmailLog[]
   completedDeliveries  DeliveryEvent[] @relation("CompletedDeliveries")
+  createdQuotes        Quote[]    @relation("CreatedQuotes")
+  updatedQuotes        Quote[]    @relation("UpdatedQuotes")
+  createdQuoteItems    QuoteItem[] @relation("CreatedQuoteItems")
   createdAt            DateTime   @default(now()) @map("created_at")
   updatedAt            DateTime   @updatedAt @map("updated_at")
 
@@ -203,6 +206,11 @@ model Quote {
   orderNumber        Int?        @unique @map("order_number")
   orderDate          DateTime?   @map("order_date")
   expiryReminderSent Boolean     @default(false) @map("expiry_reminder_sent")
+  // Spårbarhet: vem som lade upp offerten och vem som rörde den sist.
+  createdBy          User?       @relation("CreatedQuotes", fields: [createdById], references: [id], onDelete: SetNull)
+  createdById        String?     @map("created_by_id")
+  updatedBy          User?       @relation("UpdatedQuotes", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedById        String?     @map("updated_by_id")
   items              QuoteItem[]
   createdAt          DateTime    @default(now()) @map("created_at")
   updatedAt          DateTime    @updatedAt @map("updated_at")
@@ -229,6 +237,11 @@ model QuoteItem {
   sourcePartnerId      String?  @map("source_partner_id")
   sourceQuoteRef       String?  @map("source_quote_ref")
   sourceArticleNumber  String?  @map("source_article_number")
+
+  // Vem som lade till raden. Sätts vid inläsning av leverantörsoffert och
+  // när raderna sparas från editorn.
+  createdBy            User?    @relation("CreatedQuoteItems", fields: [createdById], references: [id], onDelete: SetNull)
+  createdById          String?  @map("created_by_id")
 
   @@map("quote_items")
 }
