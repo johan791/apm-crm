@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { saveQuoteItems } from "@/lib/actions/quotes";
@@ -134,6 +134,21 @@ export function QuoteItemsEditor({
     setItems((prev) => prev.filter((item) => item.tempId !== tempId));
   }
 
+  /**
+   * Byter plats på raden och dess granne. Radernas ordning i listan är det
+   * som blir sortOrder vid sparning, så det här är hela omordningen.
+   */
+  function moveRow(tempId: string, direction: -1 | 1) {
+    setItems((prev) => {
+      const index = prev.findIndex((item) => item.tempId === tempId);
+      const target = index + direction;
+      if (index === -1 || target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
   const sumExMoms = items.reduce((sum, item) => sum + rowTotal(item), 0);
   const moms = sumExMoms * 0.25;
   const totalInkMoms = sumExMoms + moms;
@@ -185,11 +200,11 @@ export function QuoteItemsEditor({
                     <th className="pb-2 pr-2 font-medium text-right min-w-[100px]">Kostnadspris</th>
                     <th className="pb-2 pr-2 font-medium text-right min-w-[70px]">Rabatt%</th>
                     <th className="pb-2 pr-2 font-medium text-right min-w-[100px]">Summa</th>
-                    <th className="pb-2 w-10"></th>
+                    <th className="pb-2 w-28"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((item) => (
+                  {items.map((item, index) => (
                     <tr key={item.tempId} className="border-b last:border-0">
                       <td className="py-2 pr-2">
                         <input
@@ -282,15 +297,41 @@ export function QuoteItemsEditor({
                         {formatCurrency(rowTotal(item))}
                       </td>
                       <td className="py-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() => removeRow(item.tempId)}
-                          disabled={items.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4 text-muted-foreground" />
-                        </Button>
+                        <div className="flex items-center gap-0.5">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Flytta upp"
+                            title="Flytta upp"
+                            onClick={() => moveRow(item.tempId, -1)}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Flytta ner"
+                            title="Flytta ner"
+                            onClick={() => moveRow(item.tempId, 1)}
+                            disabled={index === items.length - 1}
+                          >
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            aria-label="Ta bort rad"
+                            title="Ta bort rad"
+                            onClick={() => removeRow(item.tempId)}
+                            disabled={items.length === 1}
+                          >
+                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

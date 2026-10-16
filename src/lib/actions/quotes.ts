@@ -105,7 +105,7 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
 
   await prisma.$transaction([
     prisma.quoteItem.deleteMany({ where: { quoteId } }),
-    ...items.map((item) =>
+    ...items.map((item, index) =>
       prisma.quoteItem.create({
         data: {
           quoteId,
@@ -116,7 +116,9 @@ export async function saveQuoteItems(quoteId: string, formData: FormData) {
           unitPrice: toNumber(item.unitPrice),
           costPrice: toNumber(item.costPrice),
           discount: toNumber(item.discount),
-          sortOrder: item.sortOrder,
+          // Ordningen är radernas position i listan, inte vad klienten
+          // råkar skicka med. Gör sorteringen oberoende av klienten.
+          sortOrder: index,
           // Raderna skrivs om från grunden vid varje sparning, så ursprunget
           // från en inläst leverantörsoffert måste skrivas tillbaka.
           sourcePartnerId: item.sourcePartnerId ?? null,
