@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  GripVertical,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { saveQuoteItems } from "@/lib/actions/quotes";
@@ -102,6 +109,11 @@ export function QuoteItemsEditor({
         ]
   );
 
+  // Raden som dras just nu, och raden den svävar över. Bara återkoppling under
+  // dragningen — ordningen lever i items.
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
   function updateItem(tempId: string, field: keyof QuoteItem, value: string) {
     setItems((prev) =>
       prev.map((item) =>
@@ -145,6 +157,39 @@ export function QuoteItemsEditor({
       if (index === -1 || target < 0 || target >= prev.length) return prev;
       const next = [...prev];
       [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  /** Flyttar den dragna raden till den plats där den släpps. */
+  function moveRowTo(sourceId: string, targetId: string) {
+    if (sourceId === targetId) return;
+    setItems((prev) => {
+      const from = prev.findIndex((item) => item.tempId === sourceId);
+      const to = prev.findIndex((item) => item.tempId === targetId);
+      if (from === -1 || to === -1) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+
+  /**
+   * Lägger en kopia av raden direkt under originalet. Ursprunget från en
+   * leverantörsoffert följer med — priset kommer fortfarande därifrån — men
+   * kopian är en ny rad och stämplas med den som sparar.
+   */
+  function duplicateRow(tempId: string) {
+    setItems((prev) => {
+      const index = prev.findIndex((item) => item.tempId === tempId);
+      if (index === -1) return prev;
+      const next = [...prev];
+      next.splice(index + 1, 0, {
+        ...prev[index],
+        tempId: generateId(),
+        createdById: null,
+      });
       return next;
     });
   }
@@ -200,12 +245,34 @@ export function QuoteItemsEditor({
                     <th className="pb-2 pr-2 font-medium text-right min-w-[100px]">Kostnadspris</th>
                     <th className="pb-2 pr-2 font-medium text-right min-w-[70px]">Rabatt%</th>
                     <th className="pb-2 pr-2 font-medium text-right min-w-[100px]">Summa</th>
-                    <th className="pb-2 w-28"></th>
+                    <th className="pb-2 w-40"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, index) => (
-                    <tr key={item.tempId} className="border-b last:border-0">
+                    <tr
+                      key={item.tempId}
+                      onDragOver={(e) => {
+                        if (!dragId) return;
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = "move";
+                        setDragOverId(item.tempId);
+                      }}
+                      onDrop={(e) => {
+                        if (!dragId) return;
+                        e.preventDefault();
+                        moveRowTo(dragId, item.tempId);
+                        setDragId(null);
+                        setDragOverId(null);
+                      }}
+                      className={`border-b last:border-0 ${
+                        dragId === item.tempId
+                          ? "opacity-40"
+                          : dragOverId === item.tempId
+                            ? "bg-muted"
+                            : ""
+                      }`}
+                    >
                       <td className="py-2 pr-2">
                         <input
                           type="text"
@@ -298,6 +365,26 @@ export function QuoteItemsEditor({
                       </td>
                       <td className="py-2">
                         <div className="flex items-center gap-0.5">
+                          <span
+                            draggable
+                            onDragStart={(e) => {
+                              setDragId(item.tempId);
+                              e.dataTransfer.effectAllowed = "move";
+                              e.dataTransfer.setData("text/plain", item.tempId);
+                              // Dra hela raden som bild, inte bara handtaget.
+                              const row = e.currentTarget.closest("tr");
+                              if (row) e.dataTransfer.setDragImage(row, 0, 0);
+                            }}
+                            onDragEnd={() => {
+                              setDragId(null);
+                              setDragOverId(null);
+                            }}
+                            aria-label="Dra för att flytta raden"
+                            title="Dra för att flytta raden"
+                            className="flex h-8 w-6 shrink-0 cursor-grab items-center justify-center active:cursor-grabbing"
+                          >
+                            <GripVertical className="h-4 w-4 text-muted-foreground" />
+                          </span>
                           <Button
                             type="button"
                             variant="ghost"
@@ -324,6 +411,16 @@ export function QuoteItemsEditor({
                             type="button"
                             variant="ghost"
                             size="icon-sm"
+                            aria-label="Kopiera rad"
+                            title="Kopiera rad"
+                            onClick={() => duplicateRow(item.tempId)}
+                          >
+                            <Copy className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
                             aria-label="Ta bort rad"
                             title="Ta bort rad"
                             onClick={() => removeRow(item.tempId)}
@@ -340,8 +437,12 @@ export function QuoteItemsEditor({
             </div>
 
             <p className="mt-2 text-xs text-muted-foreground">
-              Tips: skriv minustecken i Antal eller A-pris för en avdragsrad, t.ex.
-              inbyte eller kompensation.
+              Tips: dra i handtaget längst till höger för att flytta en rad, eller
+              använd pilarna. Kopieringsknappen lägger en likadan rad under.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Skriv minustecken i Antal eller A-pris för en avdragsrad, t.ex. inbyte
+              eller kompensation.
             </p>
 
             <Button
