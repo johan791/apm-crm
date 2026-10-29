@@ -6,6 +6,7 @@ import { requireAuth, requireUserId } from "@/lib/current-user";
 import {
   extractSupplierQuote,
   checkTotal,
+  importErrorMessage,
   netUnitCost,
   type ImportCheck,
   type ParsedLine,
@@ -68,13 +69,7 @@ export async function parseSupplierQuote(
     };
   } catch (error) {
     console.error("Inläsning av leverantörsoffert misslyckades", error);
-    return {
-      ok: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Något gick fel vid inläsningen av offerten.",
-    };
+    return { ok: false, error: importErrorMessage(error) };
   }
 }
 
