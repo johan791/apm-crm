@@ -179,12 +179,54 @@ export function checkTotal(parsed: ParsedSupplierQuote): ImportCheck {
   };
 }
 
+/**
+ * Fel som beror på underlaget eller på systemet självt, och som redan har en
+ * formulering avsedd för användaren. Skiljs från fel som kommer ur SDK:n.
+ */
+export class SupplierQuoteError extends Error {}
+
+/**
+ * Översätter ett fel till något Linda kan agera på. Tekniska detaljer stannar
+ * i serverloggen — här ska det stå vad som hänt och vad hon gör åt det.
+ */
+export function importErrorMessage(error: unknown): string {
+  if (error instanceof SupplierQuoteError) return error.message;
+
+  if (error instanceof Anthropic.APIConnectionError) {
+    return "Fick ingen kontakt med tolkningstjänsten. Försök igen om en stund.";
+  }
+
+  if (error instanceof Anthropic.APIError) {
+    const status = error.status ?? 0;
+    const text = String(error.message ?? "").toLowerCase();
+
+    if (status === 401 || status === 403) {
+      return "Systemets nyckel till tolkningstjänsten fungerar inte längre. Hör av dig till Johan, inläsningen är ur funktion tills den är utbytt.";
+    }
+    if (text.includes("credit balance")) {
+      return "Tolkningstjänstens saldo är slut. Hör av dig till Johan, inläsningen är ur funktion tills det är påfyllt.";
+    }
+    if (status === 429) {
+      return "Tolkningstjänsten är hårt belastad just nu. Vänta en minut och försök igen.";
+    }
+    if (status >= 500) {
+      return "Tolkningstjänsten svarar inte just nu. Försök igen om en stund.";
+    }
+    if (status === 400) {
+      return "Filen gick inte att läsa. Kontrollera att PDF:en inte är lösenordsskyddad, och att den innehåller text och inte bara en inskannad bild.";
+    }
+  }
+
+  return "Något gick fel vid inläsningen av offerten. Försök igen, och hör av dig till Johan om det upprepar sig.";
+}
+
 export async function extractSupplierQuote(
   pdf: Uint8Array
 ): Promise<ParsedSupplierQuote> {
   if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error(
-      "ANTHROPIC_API_KEY saknas. Lägg in nyckeln i miljövariablerna för att kunna läsa in leverantörsoffert."
+    console.error("[leverantörsoffert] ANTHROPIC_API_KEY saknas i miljön");
+    throw new SupplierQuoteError(
+      "Inläsningen är inte färdigkonfigurerad i den här miljön. Hör av dig till Johan."
     );
   }
 
@@ -228,7 +270,7 @@ export async function extractSupplierQuote(
   );
 
   if (!toolUse) {
-    throw new Error(
+    throw new SupplierQuoteError(
       "Kunde inte tolka offerten. Kontrollera att PDF:en innehåller en artikeltabell."
     );
   }
