@@ -178,6 +178,12 @@
 }
 
 @media print {
+  /* Webbläsaren ritar sin egen rad med datum, adress och sidnummer i
+     sidmarginalen. Nollas marginalen finns ingen plats för den, och
+     utskriften blir ren nog att skicka till kund. Marginalen läggs i
+     stället på själva dokumentet. */
+  @page { margin: 0; }
+
   nav, aside, [data-slot="sheet"] { display: none !important; }
   main { padding: 0 !important; }
   body { background: white !important; }

@@ -90,7 +90,7 @@ export default async function SkrivUtOffertPage({
         </div>
       </div>
 
-      <div className="mx-auto max-w-[210mm] rounded-md border bg-white p-10 text-[13px] leading-snug text-black shadow-sm print:border-none print:p-0 print:shadow-none">
+      <div className="mx-auto max-w-[210mm] rounded-md border bg-white p-10 text-[13px] leading-snug text-black shadow-sm print:border-none print:p-[15mm] print:shadow-none">
         {/* Sidhuvud: avsändare till vänster, dokumenttyp och nummer till höger */}
         <div className="flex items-start justify-between gap-8">
           <div>
